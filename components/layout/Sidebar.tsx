@@ -1,0 +1,79 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const menuItems = [
+  {
+    section: 'Utama',
+    items: [
+      { href: '/', icon: '🏠', label: 'Beranda', id: 'nav-home' },
+      { href: '/datasets', icon: '📊', label: 'Dataset', id: 'nav-datasets' },
+      { href: '/pengumpulan', icon: '📈', label: 'Pengumpulan Data', id: 'nav-pengumpulan' },
+    ],
+  },
+  {
+    section: 'Analisis',
+    items: [
+      { href: '/prioritas', icon: '🎯', label: 'Data Prioritas', id: 'nav-prioritas' },
+      { href: '/prioritas/klasifikasi', icon: '🏷️', label: 'Klasifikasi', id: 'nav-klasifikasi' },
+      { href: '/kualitas', icon: '⭐', label: 'Kualitas Data', id: 'nav-kualitas' },
+    ],
+  },
+  {
+    section: 'Referensi',
+    items: [
+      { href: '/organisasi', icon: '🏢', label: 'Organisasi', id: 'nav-organisasi' },
+      { href: '/bigdata', icon: '📦', label: 'BigData Explorer', id: 'nav-bigdata' },
+      { href: '/diskontinuasi', icon: '🔔', label: 'Diskontinuasi', id: 'nav-diskontinuasi' },
+      { href: '/laporan', icon: '📋', label: 'Laporan', id: 'nav-laporan' },
+    ],
+  },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href);
+  };
+
+  return (
+    <aside className="sidebar" id="sidebar">
+      <div className="sidebar-logo">
+        <div className="sidebar-logo-icon">SD</div>
+        <div className="sidebar-logo-text">
+          <span className="sidebar-logo-title">Satu Data</span>
+          <span className="sidebar-logo-subtitle">Kota Bogor — Monitoring</span>
+        </div>
+      </div>
+
+      <nav className="sidebar-nav">
+        {menuItems.map((section) => (
+          <div key={section.section}>
+            <div className="sidebar-section-title">{section.section}</div>
+            {section.items.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                id={item.id}
+                className={`sidebar-link ${isActive(item.href) ? 'active' : ''}`}
+              >
+                <span className="sidebar-link-icon">{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="sidebar-refresh">
+          <span className="sidebar-refresh-dot"></span>
+          <span>Auto-refresh setiap 5 menit</span>
+        </div>
+      </div>
+    </aside>
+  );
+}
