@@ -34,10 +34,7 @@ const menuItems = [
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
-  };
+  const isActive = (href: string) => pathname === href;
 
   return (
     <aside className="sidebar" id="sidebar">
