@@ -10,12 +10,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        const username = process.env.DASHBOARD_USERNAME;
-        const password = process.env.DASHBOARD_PASSWORD;
+        // Gunakan .trim() untuk membuang spasi kosong atau karakter \r (carriage return)
+        // yang sering terbawa saat file .env.local disalin dari komputer Windows ke server Linux
+        const envUsername = (process.env.DASHBOARD_USERNAME || '').trim();
+        const envPassword = (process.env.DASHBOARD_PASSWORD || '').trim();
+
+        const inputUsername = (credentials?.username as string || '').trim();
+        const inputPassword = (credentials?.password as string || '').trim();
 
         if (
-          credentials?.username === username &&
-          credentials?.password === password
+          inputUsername && 
+          inputPassword &&
+          inputUsername === envUsername &&
+          inputPassword === envPassword
         ) {
           return {
             id: '1',
