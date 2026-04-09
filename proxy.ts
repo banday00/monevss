@@ -4,20 +4,30 @@ import type { NextRequest } from 'next/server';
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow auth API routes, login page, and static files
+  // Biarkan static files, API auth, dan favicon lewat tanpa cek
   if (
     pathname.startsWith('/api/auth') ||
-    pathname === '/login'
+    pathname.startsWith('/_next/') ||
+    pathname === '/favicon.ico'
   ) {
     return NextResponse.next();
   }
 
-  // Check for session token cookie (NextAuth v5 uses this)
+  // Cek session cookie (NextAuth v5)
   const sessionToken =
     request.cookies.get('authjs.session-token') ||
     request.cookies.get('__Secure-authjs.session-token');
 
-  if (!sessionToken) {
+  const isLoggedIn  = !!sessionToken;
+  const isLoginPage = pathname === '/login';
+
+  // Sudah login tapi akses /login → redirect ke beranda
+  if (isLoggedIn && isLoginPage) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Belum login dan bukan di /login → redirect ke login
+  if (!isLoggedIn && !isLoginPage) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
