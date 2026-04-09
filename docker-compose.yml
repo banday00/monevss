@@ -34,6 +34,7 @@ services:
       DASHBOARD_USERNAME: ${DASHBOARD_USERNAME}
       DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: "true"
 
       # ── Notifikasi ────────────────────────────────────
       N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
