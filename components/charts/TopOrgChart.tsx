@@ -31,8 +31,8 @@ export default function TopOrgChart({ data }: TopOrgChartProps) {
   }));
 
   return (
-    <div className="chart-container">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="chart-container" style={{ minHeight: 300 }}>
+      <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
           layout="vertical"

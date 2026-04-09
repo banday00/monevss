@@ -361,8 +361,8 @@ export default function PengumpulanPage() {
               <p className="card-subtitle">Perbandingan 5 tahun terakhir</p>
             </div>
           </div>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="chart-container" style={{ minHeight: 300 }}>
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={yearly} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
                 <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />

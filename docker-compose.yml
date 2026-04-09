@@ -1,0 +1,62 @@
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Variabel NEXT_PUBLIC_* perlu diteruskan saat build
+        NEXT_PUBLIC_REFRESH_INTERVAL: ${NEXT_PUBLIC_REFRESH_INTERVAL:-300000}
+    image: dashboard-satudata:latest
+    container_name: dashboard-satudata
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+
+      # ── Database Replika ───────────────────────────────
+      DB_REPLIKA_HOST:     ${DB_REPLIKA_HOST}
+      DB_REPLIKA_PORT:     ${DB_REPLIKA_PORT:-5432}
+      DB_REPLIKA_NAME:     ${DB_REPLIKA_NAME}
+      DB_REPLIKA_USER:     ${DB_REPLIKA_USER}
+      DB_REPLIKA_PASSWORD: ${DB_REPLIKA_PASSWORD}
+      DB_REPLIKA_SSL:      ${DB_REPLIKA_SSL:-false}
+
+      # ── Database BigData ───────────────────────────────
+      DB_BIGDATA_HOST:     ${DB_BIGDATA_HOST}
+      DB_BIGDATA_PORT:     ${DB_BIGDATA_PORT:-5432}
+      DB_BIGDATA_NAME:     ${DB_BIGDATA_NAME}
+      DB_BIGDATA_USER:     ${DB_BIGDATA_USER}
+      DB_BIGDATA_PASSWORD: ${DB_BIGDATA_PASSWORD}
+      DB_BIGDATA_SSL:      ${DB_BIGDATA_SSL:-false}
+
+      # ── Auth ───────────────────────────────────────────
+      DASHBOARD_USERNAME: ${DASHBOARD_USERNAME}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
+      AUTH_SECRET:        ${AUTH_SECRET}
+
+      # ── Notifikasi ────────────────────────────────────
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
+
+      # ── App Config ────────────────────────────────────
+      NEXT_PUBLIC_REFRESH_INTERVAL: ${NEXT_PUBLIC_REFRESH_INTERVAL:-300000}
+      HISTORICAL_YEARS: ${HISTORICAL_YEARS:-5}
+
+    # Memasang file .env.local dari host (opsional, alternatif env_file)
+    # env_file:
+    #   - .env.local
+
+    networks:
+      - satudata-net
+
+    # Health check — pastikan app merespons sebelum dianggap "healthy"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  satudata-net:
+    driver: bridge

@@ -33,8 +33,8 @@ export default function TrendChart({ data }: TrendChartProps) {
   });
 
   return (
-    <div className="chart-container">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="chart-container" style={{ minHeight: 300 }}>
+      <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">

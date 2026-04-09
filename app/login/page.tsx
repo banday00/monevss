@@ -82,6 +82,7 @@ function LoginForm() {
       refreshCaptcha(); // force new captcha on failed login
     } else {
       router.push(callbackUrl);
+      router.refresh(); // Force server re-render agar layout membaca session baru → Sidebar muncul
     }
   };
 
