@@ -10,30 +10,30 @@ services:
     container_name: dashboard-satudata
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3015:3015"
     environment:
       NODE_ENV: production
 
       # ── Database Replika ───────────────────────────────
-      DB_REPLIKA_HOST:     ${DB_REPLIKA_HOST}
-      DB_REPLIKA_PORT:     ${DB_REPLIKA_PORT:-5432}
-      DB_REPLIKA_NAME:     ${DB_REPLIKA_NAME}
-      DB_REPLIKA_USER:     ${DB_REPLIKA_USER}
+      DB_REPLIKA_HOST: ${DB_REPLIKA_HOST}
+      DB_REPLIKA_PORT: ${DB_REPLIKA_PORT:-5432}
+      DB_REPLIKA_NAME: ${DB_REPLIKA_NAME}
+      DB_REPLIKA_USER: ${DB_REPLIKA_USER}
       DB_REPLIKA_PASSWORD: ${DB_REPLIKA_PASSWORD}
-      DB_REPLIKA_SSL:      ${DB_REPLIKA_SSL:-false}
+      DB_REPLIKA_SSL: ${DB_REPLIKA_SSL:-false}
 
       # ── Database BigData ───────────────────────────────
-      DB_BIGDATA_HOST:     ${DB_BIGDATA_HOST}
-      DB_BIGDATA_PORT:     ${DB_BIGDATA_PORT:-5432}
-      DB_BIGDATA_NAME:     ${DB_BIGDATA_NAME}
-      DB_BIGDATA_USER:     ${DB_BIGDATA_USER}
+      DB_BIGDATA_HOST: ${DB_BIGDATA_HOST}
+      DB_BIGDATA_PORT: ${DB_BIGDATA_PORT:-5432}
+      DB_BIGDATA_NAME: ${DB_BIGDATA_NAME}
+      DB_BIGDATA_USER: ${DB_BIGDATA_USER}
       DB_BIGDATA_PASSWORD: ${DB_BIGDATA_PASSWORD}
-      DB_BIGDATA_SSL:      ${DB_BIGDATA_SSL:-false}
+      DB_BIGDATA_SSL: ${DB_BIGDATA_SSL:-false}
 
       # ── Auth ───────────────────────────────────────────
       DASHBOARD_USERNAME: ${DASHBOARD_USERNAME}
       DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
-      AUTH_SECRET:        ${AUTH_SECRET}
+      AUTH_SECRET: ${AUTH_SECRET}
 
       # ── Notifikasi ────────────────────────────────────
       N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
@@ -51,7 +51,7 @@ services:
 
     # Health check — pastikan app merespons sebelum dianggap "healthy"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3015/api/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
