@@ -157,7 +157,8 @@ export async function getRecentActivities(limit: number = 20): Promise<RecentAct
   return queryReplika<RecentActivity>(
     `SELECT 
       h.id, h.dataset_id, d.name as dataset_name,
-      h.type, h.notes, h.username, h.cdate,
+      h.type, h.notes, h.username,
+      TO_CHAR(h.cdate AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS+07:00') as cdate,
       o.name as organisasi_name
     FROM history_dataset h
     JOIN datasets d ON h.dataset_id = d.id

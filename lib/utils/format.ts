@@ -35,7 +35,15 @@ export function formatDateTime(date: string | Date): string {
 export function formatRelativeTime(date: string | Date): string {
   const now = new Date();
   const d = new Date(date);
+
+  // Guard: jika tanggal tidak valid
+  if (isNaN(d.getTime())) return '-';
+
   const diffMs = now.getTime() - d.getTime();
+
+  // Guard: jika waktu di masa depan (kemungkinan selisih server/client), tampilkan 'Baru saja'
+  if (diffMs < 0) return 'Baru saja';
+
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
