@@ -15,14 +15,17 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Middleware sudah memastikan:
+  //   - Unauthenticated → hanya bisa akses /login
+  //   - Authenticated   → redirect keluar dari /login ke /
+  // Layout tinggal cek session untuk menentukan apakah perlu render sidebar.
   const session = await auth();
-  const isLoginPage =
-    typeof children === 'object' && children !== null;
 
   return (
     <html lang="id">
       <body>
         {session ? (
+          // Authenticated: tampilkan full dashboard layout
           <div className="app-layout">
             <Sidebar />
             <div className="main-content">
@@ -31,6 +34,7 @@ export default async function RootLayout({
             </div>
           </div>
         ) : (
+          // Unauthenticated: tampilkan halaman login tanpa sidebar/header
           children
         )}
       </body>
