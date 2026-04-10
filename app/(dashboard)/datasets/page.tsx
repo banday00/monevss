@@ -423,12 +423,19 @@ export default function DatasetsPage() {
 
       {/* Filters */}
       <FilterBar
-        filters={[
-          { key: 'organisasi_id', label: 'Organisasi', type: 'select', options: orgOptions.map((o) => ({ value: String(o.id), label: o.name })) },
-          { key: 'topik_id', label: 'Topik', type: 'select', options: topikOptions.map((t) => ({ value: String(t.id), label: t.name })) },
-          { key: 'start_date', label: 'Dari Tanggal', type: 'date' },
-          { key: 'end_date', label: 'Sampai Tanggal', type: 'date' },
-        ]}
+        filters={
+          tab === 'all'
+            ? [
+                { key: 'organisasi_id', label: 'Organisasi', type: 'select', options: orgOptions.map((o) => ({ value: String(o.id), label: o.name })) },
+                { key: 'topik_id', label: 'Topik', type: 'select', options: topikOptions.map((t) => ({ value: String(t.id), label: t.name })) },
+              ]
+            : [
+                { key: 'organisasi_id', label: 'Organisasi', type: 'select', options: orgOptions.map((o) => ({ value: String(o.id), label: o.name })) },
+                { key: 'topik_id', label: 'Topik', type: 'select', options: topikOptions.map((t) => ({ value: String(t.id), label: t.name })) },
+                { key: 'start_date', label: 'Dari Tanggal', type: 'date' },
+                { key: 'end_date', label: 'Sampai Tanggal', type: 'date' },
+              ]
+        }
         values={filters}
         onChange={handleFilterChange}
         onReset={handleReset}

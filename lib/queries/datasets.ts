@@ -56,7 +56,7 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
     params.push(parseInt(filters.topik_id));
   }
 
-  if (filters.start_date) {
+  if (filters.start_date && filters.tab !== 'all') {
     if (filters.tab === 'updated') {
       conditions.push(`d.mdate >= $${paramIndex++}`);
     } else {
@@ -65,7 +65,7 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
     params.push(filters.start_date);
   }
 
-  if (filters.end_date) {
+  if (filters.end_date && filters.tab !== 'all') {
     if (filters.tab === 'updated') {
       conditions.push(`d.mdate <= $${paramIndex++}`);
     } else {
