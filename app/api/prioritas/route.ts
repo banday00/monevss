@@ -43,8 +43,18 @@ export async function GET(request: NextRequest) {
     const totalAll = data.length;
     const fulfilledAll = data.filter((d) => d.dataset_id).length;
 
+    const sortedAll = [...data].sort((a, b) => {
+      const aHas = a.dataset_id ? 1 : 0;
+      const bHas = b.dataset_id ? 1 : 0;
+      if (aHas !== bHas) return bHas - aHas;
+      if (a.organisasi_name !== b.organisasi_name) {
+        return a.organisasi_name.localeCompare(b.organisasi_name);
+      }
+      return a.name.localeCompare(b.name);
+    });
+
     return NextResponse.json({
-      all: data,
+      all: sortedAll,
       grouped: Object.values(grouped).sort((a, b) => b.percentage - a.percentage),
       summary: {
         total: totalAll,
