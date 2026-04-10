@@ -106,16 +106,57 @@ export default function DiskontinuasiPage() {
   return (
     <div>
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">🔔 Monitoring Diskontinuasi</h1>
-        <p className="page-subtitle">
-          Pantau dataset yang diajukan dan disetujui untuk diskontinuasi
-          {isDemo && (
-            <span style={{ marginLeft: 12, padding: '2px 10px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
-              ⚠️ Mode Demo
-            </span>
-          )}
-        </p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className="page-title">🔔 Monitoring Diskontinuasi</h1>
+          <p className="page-subtitle">
+            Pantau dataset yang diajukan dan disetujui untuk diskontinuasi
+            {isDemo && (
+              <span style={{ marginLeft: 12, padding: '2px 10px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
+                ⚠️ Mode Demo
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          onClick={fetchData}
+          disabled={loading}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: 'var(--primary-500)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 'var(--radius-md)',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(16,185,129,0.2)'
+          }}
+          onMouseOver={(e) => {
+            if (!loading) e.currentTarget.style.backgroundColor = 'var(--primary-600)';
+          }}
+          onMouseOut={(e) => {
+            if (!loading) e.currentTarget.style.backgroundColor = 'var(--primary-500)';
+          }}
+        >
+          <span style={{ 
+            display: 'inline-block', 
+            animation: loading ? 'spin 1s linear infinite' : 'none',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+              <path d="M16 21v-5h5"></path>
+            </svg>
+          </span>
+          {loading ? 'Memuat Data...' : 'Refresh Data'}
+        </button>
       </div>
 
       {/* Stat Cards */}
