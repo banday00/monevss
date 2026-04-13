@@ -91,6 +91,7 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
   } else {
     // Tab "Semua": is_active=true, validate='approve'
     conditions.push(`d.is_active = true`);
+    conditions.push(`d.is_deleted = false`);
     conditions.push(`d.validate = 'approve'`);
   }
 
@@ -128,9 +129,7 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
       LIMIT 1
     ) dqs ON true
     WHERE ${conditions.join(' AND ')}
-    ORDER BY ${orderBy}
-    LIMIT 500
-  `;
+    ORDER BY ${orderBy}`;
 
   return queryReplika<DatasetRow>(sql, params);
 }
