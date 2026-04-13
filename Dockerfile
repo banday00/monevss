@@ -47,6 +47,8 @@ USER nextjs
 
 EXPOSE 3015
 ENV PORT=3015
-ENV HOSTNAME="https://svc-monevss.kotabogor.go.id"
+ENV HOSTNAME="0.0.0.0"
+ENV AUTH_URL="https://svc-monevss.kotabogor.go.id"
+ENV AUTH_TRUST_HOST=true
 
 CMD ["node", "server.js"]
