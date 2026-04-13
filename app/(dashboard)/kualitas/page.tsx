@@ -3,22 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import DataTable from '@/components/ui/DataTable';
 import { getScoreColor, getScoreLabel, formatDate } from '@/lib/utils/format';
-
-interface QualityScore {
-  id: string;
-  dataset_id: number;
-  dataset_name: string;
-  dataset_slug: string | null;
-  organisasi_name: string;
-  score: number;
-  status: string | null;
-  completeness: number | null;
-  conformity: number | null;
-  timeliness: number | null;
-  uniqueness: number | null;
-  consistency: number | null;
-  timestamp: string;
-}
+import type { QualityScore } from '@/lib/queries/kualitas';
 
 const demoScores: QualityScore[] = [
   { id: '1', dataset_id: 101, dataset_name: 'Jumlah Penduduk per Kecamatan', dataset_slug: 'jumlah-penduduk-per-kecamatan', organisasi_name: 'Dinas Dukcapil', score: 100, status: 'sangat_baik', completeness: 100, conformity: 100, timeliness: 100, uniqueness: 100, consistency: 100, timestamp: '2026-03-01' },

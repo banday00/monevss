@@ -61,11 +61,16 @@ const demoDatasets: DatasetRow[] = [
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 function getKlasifikasiColor(k: string): string {
   switch (k.toLowerCase()) {
-    case 'terbuka':         return '#10b981';
-    case 'terbatas':        return '#3b82f6';
-    case 'rahasia':         return '#f59e0b';
-    case 'sangat rahasia':  return '#ef4444';
-    default:                return '#64748b';
+    case 'terbuka':
+    case 'public':           return '#10b981'; // Emerald
+    case 'terbatas':
+    case 'internal':         return '#06b6d4'; // Cyan
+    case 'rahasia':
+    case 'private':
+    case 'rahasia':          return '#f59e0b'; // Amber
+    case 'sangat rahasia':   return '#f43f5e'; // Rose
+    case 'tidak ditentukan': return '#8b5cf6'; // Violet
+    default:                 return '#94a3b8'; // Slate
   }
 }
 
@@ -418,12 +423,14 @@ export default function KlasifikasiPage() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 20, marginBottom: 24 }}>
           {/* Donut + Legend */}
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="card shadow-premium" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="card-header" style={{ marginBottom: 0 }}>
               <h3 className="card-title">Distribusi Klasifikasi</h3>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-              <MiniDonut data={summary} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+              <div className="animate-scale-in">
+                <MiniDonut data={summary} />
+              </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {summary.map((s) => {
                   const color = getKlasifikasiColor(s.klasifikasi);
@@ -434,19 +441,33 @@ export default function KlasifikasiPage() {
                       key={s.klasifikasi}
                       onClick={() => setSelectedKlasifikasi(isSelected ? '' : s.klasifikasi)}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        background: isSelected ? `${color}15` : 'transparent',
-                        border: `1px solid ${isSelected ? color : 'transparent'}`,
-                        borderRadius: 8, padding: '5px 8px', cursor: 'pointer',
-                        transition: 'all 0.2s', textAlign: 'left', width: '100%',
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        background: isSelected ? `${color}15` : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${isSelected ? color : 'var(--border-subtle)'}`,
+                        borderRadius: 10, padding: '6px 10px', cursor: 'pointer',
+                        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)', textAlign: 'left', width: '100%',
+                      }}
+                      onMouseOver={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.borderColor = color;
+                          e.currentTarget.style.background = `${color}08`;
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                        }
                       }}
                     >
-                      <div style={{ width: 10, height: 10, borderRadius: 3, background: color, flexShrink: 0 }} />
-                      <span style={{ flex: 1, fontSize: 12, color: isSelected ? color : 'var(--text-primary)', fontWeight: isSelected ? 700 : 500 }}>
+                      <div style={{ width: 12, height: 12, borderRadius: 4, background: color, flexShrink: 0, boxShadow: `0 0 8px ${color}60` }} />
+                      <span style={{ flex: 1, fontSize: 13, color: isSelected ? color : 'var(--text-primary)', fontWeight: isSelected ? 700 : 500 }}>
                         {s.klasifikasi}
                       </span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color }}>{s.total}</span>
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 36, textAlign: 'right' }}>{pct}%</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: isSelected ? color : 'var(--text-primary)' }}>{s.total}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{pct}%</div>
+                      </div>
                     </button>
                   );
                 })}
@@ -456,71 +477,98 @@ export default function KlasifikasiPage() {
               <button
                 onClick={() => setSelectedKlasifikasi('')}
                 style={{
-                  background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                  color: '#ef4444', borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
-                  fontSize: 11, fontWeight: 600, width: '100%',
+                  background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+                  color: '#f43f5e', borderRadius: 8, padding: '8px 12px', cursor: 'pointer',
+                  fontSize: 12, fontWeight: 700, width: '100%', marginTop: 8,
+                  transition: 'all 0.2s ease',
                 }}
+                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
               >
-                ✕ Hapus Filter: {selectedKlasifikasi}
+                ✕ Bersihkan Filter
               </button>
             )}
           </div>
 
           {/* Klasifikasi Detail Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {summary.map((s) => {
+            {summary.map((s, idx) => {
               const color = getKlasifikasiColor(s.klasifikasi);
               const isSelected = selectedKlasifikasi === s.klasifikasi;
               return (
                 <button
                   key={s.klasifikasi}
                   onClick={() => setSelectedKlasifikasi(isSelected ? '' : s.klasifikasi)}
+                  className={`animate-fade-in stagger-${idx + 1}`}
                   style={{
-                    background: isSelected ? `${color}12` : 'var(--bg-card)',
-                    border: `1px solid ${isSelected ? color + '60' : 'var(--bg-card-border)'}`,
-                    borderRadius: 12, padding: '14px 18px', cursor: 'pointer',
-                    display: 'grid', gridTemplateColumns: '1fr auto', gap: 12,
-                    alignItems: 'center', textAlign: 'left', transition: 'all 0.2s',
-                    boxShadow: isSelected ? `0 0 20px ${color}20` : 'none',
+                    background: isSelected 
+                      ? `linear-gradient(135deg, ${color}15, ${color}08)` 
+                      : 'var(--bg-card)',
+                    border: `1px solid ${isSelected ? color : 'var(--border-subtle)'}`,
+                    borderRadius: 16, padding: '16px 20px', cursor: 'pointer',
+                    display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: 20,
+                    alignItems: 'center', textAlign: 'left', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: isSelected ? `0 10px 25px -5px ${color}25` : '0 4px 6px -1px rgba(0,0,0,0.1)',
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = color;
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = `0 10px 20px -5px ${color}15`;
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+                    }
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? color : 'var(--text-primary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 3, background: color, boxShadow: `0 0 8px ${color}` }} />
+                      <span style={{ fontSize: 14, fontWeight: 800, color: isSelected ? color : 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                         {s.klasifikasi}
                       </span>
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 4 }}>
-                        {s.total} dataset
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 10 }}>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Volume:
                       </span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{s.total}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>datasets</span>
                     </div>
                     {/* Progress bar */}
-                    <div style={{ height: 4, background: 'var(--bg-input)', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{ height: 6, background: 'var(--bg-input)', borderRadius: 999, overflow: 'hidden', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' }}>
                       <div style={{
                         height: '100%', width: `${s.pct_approved}%`,
-                        background: `linear-gradient(90deg, ${color}, ${color}90)`,
-                        borderRadius: 999, transition: 'width 0.6s ease',
+                        background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+                        borderRadius: 999, transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)',
                       }} />
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, textAlign: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: '#10b981' }}>{s.approved}</div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>Approved</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, textAlign: 'center' }}>
+                    <div className="stat-mini">
+                      <div style={{ fontSize: 16, fontWeight: 800, color: '#10b981' }}>{s.approved}</div>
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Approved</div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color }}>{s.pct_approved.toFixed(1)}%</div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>Coverage</div>
+                    <div className="stat-mini">
+                      <div style={{ fontSize: 16, fontWeight: 800, color }}>{s.pct_approved.toFixed(1)}%</div>
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Coverage</div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: s.avg_score ? getScoreColor(s.avg_score) : 'var(--text-muted)' }}>
+                    <div className="stat-mini">
+                      <div style={{ 
+                        fontSize: 16, fontWeight: 800, 
+                        color: s.avg_score ? getScoreColor(s.avg_score) : 'var(--text-muted)' 
+                      }}>
                         {s.avg_score?.toFixed(1) ?? '—'}
                       </div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>Avg. Kualitas</div>
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Quality</div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: '#3b82f6' }}>{formatNumber(s.total_views)}</div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>Views</div>
+                    <div className="stat-mini">
+                      <div style={{ fontSize: 16, fontWeight: 800, color: '#3b82f6' }}>{formatNumber(s.total_views)}</div>
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Views</div>
                     </div>
                   </div>
                 </button>

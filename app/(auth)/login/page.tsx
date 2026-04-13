@@ -1,6 +1,7 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 
@@ -91,7 +92,16 @@ function LoginForm() {
       <div className="login-card animate-scale-in">
         {/* Logo */}
         <div className="login-logo">
-          <div className="login-logo-icon">SD</div>
+          <div className="login-logo-icon" style={{ background: 'transparent' }}>
+            <Image 
+              src="/logo_kota_bogor.png" 
+              alt="Logo Kota Bogor" 
+              width={48} 
+              height={48}
+              priority
+              unoptimized
+            />
+          </div>
           <h1>Satu Data Bogor</h1>
           <p>Dashboard Monitoring Portal Data</p>
         </div>
@@ -266,7 +276,16 @@ export default function LoginPage() {
       <div className="login-page">
         <div className="login-card animate-scale-in">
           <div className="login-logo">
-            <div className="login-logo-icon">SD</div>
+            <div className="login-logo-icon" style={{ background: 'transparent' }}>
+              <Image 
+                src="/logo_kota_bogor.png" 
+                alt="Logo Kota Bogor" 
+                width={48} 
+                height={48}
+                priority
+                unoptimized
+              />
+            </div>
             <h1>Satu Data Bogor</h1>
             <p>Memuat...</p>
           </div>

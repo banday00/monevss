@@ -17,7 +17,7 @@ const menuItems = [
     section: 'Analisis',
     items: [
       { href: '/prioritas', icon: '🎯', label: 'Data Prioritas', id: 'nav-prioritas' },
-      { href: '/prioritas/klasifikasi', icon: '🏷️', label: 'Klasifikasi', id: 'nav-klasifikasi' },
+      { href: '/klasifikasi', icon: '🏷️', label: 'Klasifikasi', id: 'nav-klasifikasi' },
       { href: '/kualitas', icon: '⭐', label: 'Kualitas Data', id: 'nav-kualitas' },
     ],
   },

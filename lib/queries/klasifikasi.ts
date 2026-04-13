@@ -54,33 +54,32 @@ export async function getKlasifikasiSummary(): Promise<KlasifikasiSummaryRow[]> 
       SELECT score FROM data_quality_score
       WHERE dataset_id = d.id ORDER BY timestamp DESC LIMIT 1
     ) dqs ON true
-    WHERE d.is_deleted = false AND d.is_active = true
+    WHERE d.is_deleted = false AND d.is_active = true AND d.validate = 'approve'
     GROUP BY 1
     ORDER BY COUNT(d.id) DESC`
   );
 
   return rows.map((r) => {
-    const total    = parseInt(r.total);
+    const total = parseInt(r.total);
     const approved = parseInt(r.approved);
     return {
-      klasifikasi:   r.klasifikasi,
+      klasifikasi: r.klasifikasi,
       total,
       approved,
-      pct_approved:  total > 0 ? Math.round((approved / total) * 1000) / 10 : 0,
-      avg_score:     r.avg_score != null ? parseFloat(r.avg_score) : null,
-      total_views:   parseInt(r.total_views),
+      pct_approved: total > 0 ? Math.round((approved / total) * 1000) / 10 : 0,
+      avg_score: r.avg_score != null ? parseFloat(r.avg_score) : null,
+      total_views: parseInt(r.total_views),
       total_downloads: parseInt(r.total_downloads),
     };
   });
 }
 
 export async function getDatasetsByKlasifikasi(
-  klasifikasi?: string,
-  limit = 300
+  klasifikasi?: string
 ): Promise<DatasetByKlasifikasiRow[]> {
-  const params: unknown[] = [limit];
+  const params: unknown[] = [];
   const extra = klasifikasi
-    ? `AND COALESCE(NULLIF(TRIM(d.klasifikasi), ''), 'Tidak Ditentukan') = $2`
+    ? `AND COALESCE(NULLIF(TRIM(d.klasifikasi), ''), 'Tidak Ditentukan') = $1`
     : '';
   if (klasifikasi) params.push(klasifikasi);
 
@@ -108,8 +107,7 @@ export async function getDatasetsByKlasifikasi(
       WHERE dataset_id = d.id ORDER BY timestamp DESC LIMIT 1
     ) dqs ON true
     WHERE d.is_deleted = false AND d.is_active = true ${extra}
-    ORDER BY d.mdate DESC
-    LIMIT $1`,
+    ORDER BY d.mdate DESC`,
     params
   );
 }
