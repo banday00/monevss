@@ -8,7 +8,8 @@ export function proxy(request: NextRequest) {
   if (
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/_next/') ||
-    pathname === '/favicon.ico'
+    pathname === '/favicon.ico' ||
+    pathname === '/logo_kota_bogor.png'
   ) {
     return NextResponse.next();
   }
@@ -37,5 +38,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|logo-bogor.png).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|logo_kota_bogor.png).*)'],
 };
