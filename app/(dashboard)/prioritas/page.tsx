@@ -32,31 +32,6 @@ interface PrioritySummary {
   percentage: number;
 }
 
-// Demo data
-const demoGrouped: GroupedOrg[] = [
-  { organisasi_name: 'Dinas Kesehatan', items: [], total: 25, fulfilled: 22, percentage: 88.0 },
-  { organisasi_name: 'Dinas Pendidikan', items: [], total: 20, fulfilled: 17, percentage: 85.0 },
-  { organisasi_name: 'BKAD', items: [], total: 18, fulfilled: 14, percentage: 77.8 },
-  { organisasi_name: 'Dinas Dukcapil', items: [], total: 15, fulfilled: 11, percentage: 73.3 },
-  { organisasi_name: 'Bappeda', items: [], total: 22, fulfilled: 16, percentage: 72.7 },
-  { organisasi_name: 'Dinas PUPR', items: [], total: 12, fulfilled: 8, percentage: 66.7 },
-  { organisasi_name: 'Dinas LH', items: [], total: 10, fulfilled: 6, percentage: 60.0 },
-  { organisasi_name: 'Dinas Sosial', items: [], total: 14, fulfilled: 8, percentage: 57.1 },
-  { organisasi_name: 'Disperindag', items: [], total: 8, fulfilled: 4, percentage: 50.0 },
-  { organisasi_name: 'Disnaker', items: [], total: 10, fulfilled: 4, percentage: 40.0 },
-];
-
-const demoAll: PriorityItem[] = [
-  { id: 1, organization_id: 1, organisasi_name: 'Dinas Kesehatan', dataset_id: 101, dataset_name: 'Jumlah Puskesmas', name: 'Data Puskesmas per Kecamatan', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-03-10' },
-  { id: 2, organization_id: 1, organisasi_name: 'Dinas Kesehatan', dataset_id: 102, dataset_name: 'Data Imunisasi', name: 'Cakupan Imunisasi Dasar Lengkap', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-03-10' },
-  { id: 3, organization_id: 1, organisasi_name: 'Dinas Kesehatan', dataset_id: null, dataset_name: null, name: 'Angka Kematian Ibu', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-01-15' },
-  { id: 4, organization_id: 2, organisasi_name: 'Dinas Pendidikan', dataset_id: 201, dataset_name: 'APK SD/MI', name: 'Angka Partisipasi Kasar SD', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-02-20' },
-  { id: 5, organization_id: 2, organisasi_name: 'Dinas Pendidikan', dataset_id: null, dataset_name: null, name: 'Rasio Guru per Murid SMP', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-01-15' },
-  { id: 6, organization_id: 3, organisasi_name: 'BKAD', dataset_id: 301, dataset_name: 'Realisasi APBD', name: 'Realisasi Pendapatan Daerah', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-04-01' },
-  { id: 7, organization_id: 3, organisasi_name: 'BKAD', dataset_id: null, dataset_name: null, name: 'Aset Daerah per Kategori', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-01-15' },
-  { id: 8, organization_id: 4, organisasi_name: 'Dinas Dukcapil', dataset_id: 401, dataset_name: 'Jumlah Penduduk', name: 'Data Penduduk per Kecamatan', year: 2026, is_active: true, cdate: '2026-01-15', mdate: '2026-03-15' },
-];
-
 function getProgressColor(pct: number): string {
   if (pct >= 80) return '#10b981';
   if (pct >= 60) return '#3b82f6';
@@ -73,27 +48,27 @@ export default function PrioritasPage() {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 1 - i).reverse();
   const [loading, setLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState(currentYear - 1);
   const [viewMode, setViewMode] = useState<ViewMode>('grouped');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`/api/prioritas?year=${selectedYear}`);
-      if (!res.ok) throw new Error('API error');
+      if (!res.ok) throw new Error(`Gagal memuat data (HTTP ${res.status})`);
       const json = await res.json();
+      if (json.error) throw new Error(json.error);
       setGrouped(json.grouped);
       setAllItems(json.all);
       setSummary(json.summary);
-      setIsDemo(false);
-    } catch {
-      setGrouped(demoGrouped);
-      setAllItems(demoAll);
-      const t = demoGrouped.reduce((s, g) => s + g.total, 0);
-      const f = demoGrouped.reduce((s, g) => s + g.fulfilled, 0);
-      setSummary({ total: t, fulfilled: f, unfulfilled: t - f, percentage: Math.round((f / t) * 1000) / 10 });
-      setIsDemo(true);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Terjadi kesalahan saat memuat data';
+      setError(message);
+      setGrouped([]);
+      setAllItems([]);
+      setSummary({ total: 0, fulfilled: 0, unfulfilled: 0, percentage: 0 });
     } finally {
       setLoading(false);
     }
@@ -169,14 +144,7 @@ export default function PrioritasPage() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 className="page-title">🎯 Data Prioritas</h1>
-          <p className="page-subtitle">
-            Pemenuhan data prioritas per organisasi per tahun
-            {isDemo && (
-              <span style={{ marginLeft: 12, padding: '2px 10px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
-                ⚠️ Mode Demo
-              </span>
-            )}
-          </p>
+          <p className="page-subtitle">Pemenuhan data prioritas per organisasi per tahun</p>
         </div>
         <button
           onClick={fetchData}
@@ -218,6 +186,29 @@ export default function PrioritasPage() {
           {loading ? 'Memuat Data...' : 'Refresh Data'}
         </button>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div style={{
+          padding: '14px 20px',
+          marginBottom: 20,
+          background: 'rgba(239,68,68,0.1)',
+          border: '1px solid rgba(239,68,68,0.3)',
+          borderRadius: 'var(--radius-md)',
+          color: '#ef4444',
+          fontSize: 13,
+          fontWeight: 500,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}>
+          <span style={{ fontSize: 18 }}>⚠️</span>
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: 2 }}>Gagal Memuat Data</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{error}. Silakan klik tombol &quot;Refresh Data&quot; untuk mencoba kembali.</div>
+          </div>
+        </div>
+      )}
 
       {/* Year + View Mode */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -264,7 +255,7 @@ export default function PrioritasPage() {
                 </div>
               </div>
             ))}
-            {grouped.length === 0 && (
+            {grouped.length === 0 && !error && (
               <div className="empty-state"><div className="empty-state-icon">📭</div><div className="empty-state-title">Belum ada data prioritas untuk tahun {selectedYear}</div></div>
             )}
           </div>

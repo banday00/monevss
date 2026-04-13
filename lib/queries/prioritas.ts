@@ -1,10 +1,10 @@
 import { queryReplika } from '@/lib/db/replika';
 
 export interface PriorityItem {
-  id: number;
-  organization_id: number;
-  organisasi_name: string;
-  dataset_id: number | null;
+  id: string | number;
+  organization_id: string | number | null;
+  organisasi_name: string | null;
+  dataset_id: string | number | null;
   dataset_name: string | null;
   name: string;
   year: number;
@@ -144,4 +144,3 @@ export async function getOrganisasiList(): Promise<OrganisasiDetail[]> {
     };
   });
 }
-

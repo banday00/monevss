@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 const menuItems = [
@@ -39,10 +40,19 @@ export default function Sidebar() {
   return (
     <aside className="sidebar" id="sidebar">
       <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">SD</div>
+        <div className="sidebar-logo-icon" style={{ background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Image 
+            src="/logo_kota_bogor.png" 
+            alt="Logo Kota Bogor" 
+            width={32} 
+            height={32}
+            priority
+            unoptimized
+          />
+        </div>
         <div className="sidebar-logo-text">
-          <span className="sidebar-logo-title">Satu Data</span>
-          <span className="sidebar-logo-subtitle">Kota Bogor — Monitoring</span>
+          <span className="sidebar-logo-title">SATU DATA</span>
+          <span className="sidebar-logo-subtitle">Monitoring dan Evaluasi</span>
         </div>
       </div>
 

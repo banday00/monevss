@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Dashboard Monitoring — Satu Data Kota Bogor',
+  title: 'Dashboard Monitoring dan Evaluasi Satu Data Kota Bogor',
   description:
     'Dashboard monitoring internal untuk Portal Satu Data Kota Bogor. Pantau dataset, kualitas data, dan pengumpulan data per organisasi.',
 };

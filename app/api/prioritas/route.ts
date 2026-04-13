@@ -21,10 +21,11 @@ export async function GET(request: NextRequest) {
     }> = {};
 
     data.forEach((item) => {
-      const key = String(item.organization_id);
+      const orgName = item.organisasi_name || 'Tanpa Organisasi';
+      const key = String(item.organization_id || 'unknown');
       if (!grouped[key]) {
         grouped[key] = {
-          organisasi_name: item.organisasi_name,
+          organisasi_name: orgName,
           items: [],
           total: 0,
           fulfilled: 0,
@@ -47,10 +48,13 @@ export async function GET(request: NextRequest) {
       const aHas = a.dataset_id ? 1 : 0;
       const bHas = b.dataset_id ? 1 : 0;
       if (aHas !== bHas) return bHas - aHas;
-      if (a.organisasi_name !== b.organisasi_name) {
-        return a.organisasi_name.localeCompare(b.organisasi_name);
+      
+      const aOrg = a.organisasi_name || 'Tanpa Organisasi';
+      const bOrg = b.organisasi_name || 'Tanpa Organisasi';
+      if (aOrg !== bOrg) {
+        return aOrg.localeCompare(bOrg);
       }
-      return a.name.localeCompare(b.name);
+      return (a.name || '').localeCompare(b.name || '');
     });
 
     return NextResponse.json({
@@ -68,3 +72,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Gagal memuat data prioritas' }, { status: 500 });
   }
 }
+

@@ -30,7 +30,7 @@ export default function Header() {
   return (
     <header className="header" id="header">
       <div className="header-left">
-        <h2 className="header-title">Dashboard Monitoring</h2>
+        <h2 className="header-title">Dashboard Monitoring dan Evaluasi Satu Data Kota Bogor</h2>
       </div>
 
       <div className="header-right">
