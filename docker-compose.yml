@@ -13,6 +13,7 @@ services:
       - "3015:3015"
     environment:
       NODE_ENV: production
+      AUTH_URL: "https://svc-monevss.kotabogor.go.id"
       AUTH_TRUST_HOST: "true"
 
     # Memuat semua konfigurasi langsung dari .env.local
