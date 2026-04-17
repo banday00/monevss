@@ -271,7 +271,7 @@ export default function OrganisasiPage() {
                     href={`${OPENDATA_URL}/${org.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ fontWeight: 500, color: 'var(--primary-400)', textDecoration: 'none', fontSize: 13 }}
+                    style={{ fontWeight: 500, color: 'var(--dataset-link-color)', textDecoration: 'none', fontSize: 13 }}
                     onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }}
                     onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}
                   >

@@ -221,7 +221,7 @@ export default function KlasifikasiPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  fontWeight: 600, color: 'var(--primary-400)',
+                  fontWeight: 600, color: 'var(--dataset-link-color)',
                   textDecoration: 'none', lineHeight: 1.4, display: 'block',
                   fontSize: 13,
                 }}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTheme } from '@/components/layout/ThemeProvider';
 import {
   BarChart,
   Bar,
@@ -57,6 +58,16 @@ interface UnlinkedStats {
   top_opd: UnlinkedOPD[];
 }
 
+function useCSSVar(varName: string, fallback: string): string {
+  const { theme } = useTheme();
+  const [value, setValue] = useState(fallback);
+  useEffect(() => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    setValue(v || fallback);
+  }, [theme, varName, fallback]);
+  return value;
+}
+
 function getProgressColor(pct: number): string {
   if (pct >= 80) return '#10b981';
   if (pct >= 60) return '#3b82f6';
@@ -72,6 +83,13 @@ export default function PengumpulanPage() {
   const [loading,  setLoading]  = useState(true);
   const [isDemo,   setIsDemo]   = useState(false);
   const [showUnlinkedTable, setShowUnlinkedTable] = useState(false);
+
+  const tooltipBg = useCSSVar('--chart-tooltip-bg', 'rgba(17,24,39,0.95)');
+  const tooltipBorder = useCSSVar('--chart-tooltip-border', 'rgba(148,163,184,0.15)');
+  const tooltipText = useCSSVar('--chart-tooltip-text', '#f1f5f9');
+  const chartTick = useCSSVar('--chart-tick', '#64748b');
+  const chartGrid = useCSSVar('--chart-grid', 'rgba(148,163,184,0.08)');
+  const textMuted = useCSSVar('--text-muted', '#94a3b8');
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 1 - i).reverse();
@@ -405,13 +423,13 @@ export default function PengumpulanPage() {
           <div className="chart-container" style={{ minHeight: 300 }}>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={yearly} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
-                <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+                <XAxis dataKey="year" tick={{ fill: chartTick, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: 'rgba(17, 24, 39, 0.95)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: '10px', color: '#f1f5f9', fontSize: '13px' }}
+                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: '10px', color: tooltipText, fontSize: '13px' }}
                 />
-                <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
+                <Legend wrapperStyle={{ fontSize: 11, color: textMuted }} />
                 <Bar dataKey="fulfilled" name="Terpenuhi" fill="#10b981" radius={[4, 4, 0, 0]} barSize={28} />
                 <Bar dataKey="total_priority" name="Total Prioritas" fill="rgba(59,130,246,0.4)" radius={[4, 4, 0, 0]} barSize={28} />
               </BarChart>

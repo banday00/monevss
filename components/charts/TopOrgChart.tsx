@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   BarChart,
   Bar,
@@ -10,6 +11,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { useTheme } from '@/components/layout/ThemeProvider';
 
 interface OrgData {
   id: number;
@@ -24,10 +26,27 @@ interface TopOrgChartProps {
 
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'];
 
+function useCSSVar(varName: string, fallback: string): string {
+  const { theme } = useTheme();
+  const [value, setValue] = useState(fallback);
+  useEffect(() => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    setValue(v || fallback);
+  }, [theme, varName, fallback]);
+  return value;
+}
+
 export default function TopOrgChart({ data }: TopOrgChartProps) {
+  const tooltipBg = useCSSVar('--chart-tooltip-bg', 'rgba(17,24,39,0.95)');
+  const tooltipBorder = useCSSVar('--chart-tooltip-border', 'rgba(148,163,184,0.15)');
+  const tooltipText = useCSSVar('--chart-tooltip-text', '#f1f5f9');
+  const tick = useCSSVar('--chart-tick', '#64748b');
+  const tickLight = useCSSVar('--text-secondary', '#94a3b8');
+  const grid = useCSSVar('--chart-grid', 'rgba(148,163,184,0.08)');
+
   const chartData = data.map((d) => ({
     ...d,
-    shortName: d.name.length > 20 ? d.name.substring(0, 20) + '...' : d.name,
+    shortName: d.name,
   }));
 
   return (
@@ -38,27 +57,27 @@ export default function TopOrgChart({ data }: TopOrgChartProps) {
           layout="vertical"
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" horizontal={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={grid} horizontal={false} />
           <XAxis
             type="number"
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: tick, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             type="category"
             dataKey="shortName"
-            width={150}
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            width={200}
+            tick={{ fill: tickLight, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
             contentStyle={{
-              background: 'rgba(17, 24, 39, 0.95)',
-              border: '1px solid rgba(148,163,184,0.15)',
+              background: tooltipBg,
+              border: `1px solid ${tooltipBorder}`,
               borderRadius: '10px',
-              color: '#f1f5f9',
+              color: tooltipText,
               fontSize: '13px',
             }}
             formatter={(value: unknown) => [`${value} dataset`, 'Total']}
@@ -74,3 +93,4 @@ export default function TopOrgChart({ data }: TopOrgChartProps) {
     </div>
   );
 }
+

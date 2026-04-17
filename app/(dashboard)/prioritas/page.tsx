@@ -99,7 +99,7 @@ export default function PrioritasPage() {
       width: '25%',
       render: (row: PriorityItem) => (
         row.dataset_name ? (
-          <span style={{ color: 'var(--primary-400)', fontWeight: 500 }}>{row.dataset_name}</span>
+          <span style={{ color: 'var(--dataset-link-color)', fontWeight: 500 }}>{row.dataset_name}</span>
         ) : (
           <span className="badge badge-danger">Belum ada dataset</span>
         )

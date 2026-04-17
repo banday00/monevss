@@ -57,14 +57,17 @@
   --chart-7: #06b6d4;
   --chart-8: #84cc16;
 
-  /* Dimensions */
-  --sidebar-width: 260px;
-  --sidebar-collapsed: 72px;
-  --header-height: 64px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  /* Component-specific semantic tokens */
+  --dataset-link-color: var(--primary-400); /* dark: emerald */
+
+  /* Dimensions — scaled 90% */
+  --sidebar-width: 234px;    /* 260 × 0.9 */
+  --sidebar-collapsed: 65px; /* 72 × 0.9 */
+  --header-height: 58px;     /* 64 × 0.9 */
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-full: 9999px;
 
   /* Shadows */
@@ -81,6 +84,60 @@
 }
 
 /* ============================================
+   Light Theme Override
+   ============================================ */
+[data-theme="light"] {
+  /* Background */
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(241, 245, 249, 0.95);
+  --bg-card-border: rgba(148, 163, 184, 0.2);
+  --bg-sidebar: #ffffff;
+  --bg-input: rgba(241, 245, 249, 0.8);
+  --bg-hover: rgba(226, 232, 240, 0.6);
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #f1f5f9;
+
+  /* Shadows — lighter and softer */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08), 0 6px 10px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.1);
+
+  /* Status backgrounds slightly stronger for visibility */
+  --status-success-bg: rgba(16, 185, 129, 0.1);
+  --status-warning-bg: rgba(245, 158, 11, 0.1);
+  --status-danger-bg: rgba(239, 68, 68, 0.1);
+  --status-info-bg: rgba(59, 130, 246, 0.1);
+
+  /* Chart tooltip token for JS components */
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.97);
+  --chart-tooltip-border: rgba(148, 163, 184, 0.25);
+  --chart-tooltip-text: #0f172a;
+  --chart-tick: #94a3b8;
+  --chart-grid: rgba(148, 163, 184, 0.15);
+  --chart-activedot-stroke: #ffffff;
+
+  /* Component-specific semantic tokens */
+  --dataset-link-color: #6366f1; /* light: indigo */
+}
+
+/* Default dark chart tokens */
+:root {
+  --chart-tooltip-bg: rgba(17, 24, 39, 0.95);
+  --chart-tooltip-border: rgba(148, 163, 184, 0.15);
+  --chart-tooltip-text: #f1f5f9;
+  --chart-tick: #64748b;
+  --chart-grid: rgba(148, 163, 184, 0.08);
+  --chart-activedot-stroke: #0a0f1e;
+}
+
+/* ============================================
    Reset & Base
    ============================================ */
 *,
@@ -92,7 +149,7 @@
 }
 
 html {
-  font-size: 14px;
+  font-size: 12.6px; /* 14px × 0.9 — layout scale -10% */
   scroll-behavior: smooth;
 }
 
@@ -104,6 +161,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -332,7 +390,7 @@ a:hover {
   left: var(--sidebar-width);
   right: 0;
   height: var(--header-height);
-  background: rgba(10, 15, 30, 0.85);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--bg-card-border);
@@ -1804,13 +1862,14 @@ a:hover {
   left: 105%;
   transform: translateY(-50%);
   width: 220px;
-  background: rgba(15, 23, 42, 0.97);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: var(--chart-tooltip-bg);
+  border: 1px solid var(--chart-tooltip-border);
   border-radius: var(--radius-md);
   padding: 12px 14px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   pointer-events: none;
   backdrop-filter: blur(12px);
+  color: var(--chart-tooltip-text);
 }
 
 .qs-cell:hover .qs-tooltip {

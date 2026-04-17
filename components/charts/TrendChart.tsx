@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -9,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useTheme } from '@/components/layout/ThemeProvider';
 
 interface DataPoint {
   month: string;
@@ -19,7 +21,24 @@ interface TrendChartProps {
   data: DataPoint[];
 }
 
+function useCSSVar(varName: string, fallback: string): string {
+  const { theme } = useTheme();
+  const [value, setValue] = useState(fallback);
+  useEffect(() => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    setValue(v || fallback);
+  }, [theme, varName, fallback]);
+  return value;
+}
+
 export default function TrendChart({ data }: TrendChartProps) {
+  const tooltipBg = useCSSVar('--chart-tooltip-bg', 'rgba(17,24,39,0.95)');
+  const tooltipBorder = useCSSVar('--chart-tooltip-border', 'rgba(148,163,184,0.15)');
+  const tooltipText = useCSSVar('--chart-tooltip-text', '#f1f5f9');
+  const tick = useCSSVar('--chart-tick', '#64748b');
+  const grid = useCSSVar('--chart-grid', 'rgba(148,163,184,0.08)');
+  const activeDotStroke = useCSSVar('--chart-activedot-stroke', '#0a0f1e');
+
   const formattedData = data.map((d) => {
     const [year, month] = d.month.split('-');
     const monthNames = [
@@ -42,28 +61,28 @@ export default function TrendChart({ data }: TrendChartProps) {
               <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={grid} />
           <XAxis
             dataKey="label"
-            tick={{ fill: '#64748b', fontSize: 11 }}
-            axisLine={{ stroke: 'rgba(148,163,184,0.08)' }}
+            tick={{ fill: tick, fontSize: 11 }}
+            axisLine={{ stroke: grid }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: tick, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
             contentStyle={{
-              background: 'rgba(17, 24, 39, 0.95)',
-              border: '1px solid rgba(148,163,184,0.15)',
+              background: tooltipBg,
+              border: `1px solid ${tooltipBorder}`,
               borderRadius: '10px',
-              color: '#f1f5f9',
+              color: tooltipText,
               fontSize: '13px',
               backdropFilter: 'blur(12px)',
             }}
-            labelStyle={{ color: '#94a3b8', fontWeight: 600, marginBottom: 4 }}
+            labelStyle={{ color: tick, fontWeight: 600, marginBottom: 4 }}
             formatter={(value: unknown) => [`${value} dataset`, 'Jumlah']}
           />
           <Area
@@ -74,10 +93,11 @@ export default function TrendChart({ data }: TrendChartProps) {
             fillOpacity={1}
             fill="url(#colorCount)"
             dot={{ fill: '#10b981', strokeWidth: 0, r: 3 }}
-            activeDot={{ r: 6, fill: '#10b981', stroke: '#0a0f1e', strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: '#10b981', stroke: activeDotStroke, strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>
     </div>
   );
 }
+

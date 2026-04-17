@@ -294,7 +294,7 @@ export default function DiskontinuasiPage() {
                         href={`${OPENDATA_URL}/${d.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ fontWeight: 500, color: 'var(--primary-400)', textDecoration: 'none', lineHeight: 1.3, display: 'block', fontSize: 13 }}
+                        style={{ fontWeight: 500, color: 'var(--dataset-link-color)', textDecoration: 'none', lineHeight: 1.3, display: 'block', fontSize: 13 }}
                         onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }}
                         onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}
                       >
@@ -375,7 +375,7 @@ export default function DiskontinuasiPage() {
                           href={`${OPENDATA_URL}/${h.dataset_slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ fontWeight: 500, color: 'var(--primary-400)', textDecoration: 'none', fontSize: 13, lineHeight: 1.3 }}
+                          style={{ fontWeight: 500, color: 'var(--dataset-link-color)', textDecoration: 'none', fontSize: 13, lineHeight: 1.3 }}
                           onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }}
                           onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}
                         >

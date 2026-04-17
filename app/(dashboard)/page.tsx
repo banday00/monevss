@@ -148,23 +148,34 @@ function getActivityBadge(type: string): { label: string; color: string } {
 export default function OverviewPage() {
   const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(10);
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/overview');
-      if (!res.ok) throw new Error('API error');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setData(json);
-      setIsDemo(false);
-    } catch {
-      // Use demo data when DB is not connected
-      setData(demoData);
-      setIsDemo(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal memuat data';
+      setError(msg);
+      setData(null);
+      setCountdown(10);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Auto-retry countdown when error
+  useEffect(() => {
+    if (!error) return;
+    if (countdown <= 0) { fetchData(); return; }
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [error, countdown, fetchData]);
 
   useEffect(() => {
     fetchData();
@@ -185,6 +196,59 @@ export default function OverviewPage() {
         <div className="dashboard-grid">
           <div className="skeleton skeleton-chart" />
           <div className="skeleton skeleton-chart" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && error) {
+    return (
+      <div>
+        <div className="page-header">
+          <h1 className="page-title">Beranda</h1>
+          <p className="page-subtitle">Overview portal Satu Data Kota Bogor</p>
+        </div>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '60px 24px', gap: 20,
+        }}>
+          <div style={{ fontSize: 48 }}>⚠️</div>
+          <div style={{ fontWeight: 700, fontSize: 18, color: 'var(--text-primary)' }}>
+            Gagal Memuat Data
+          </div>
+          <div style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', maxWidth: 400 }}>
+            Tidak dapat terhubung ke server. Pastikan koneksi database aktif.
+            <div style={{ marginTop: 4, fontFamily: 'monospace', fontSize: 11, color: 'var(--status-danger)', opacity: 0.8 }}>
+              {error}
+            </div>
+          </div>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 16,
+            padding: '16px 28px', borderRadius: 'var(--radius-lg)',
+            background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)',
+          }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: '50%',
+              border: '3px solid var(--primary-500)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 800, fontSize: 18, color: 'var(--primary-400)',
+            }}>
+              {countdown}
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              Mencoba ulang dalam <strong style={{ color: 'var(--primary-400)' }}>{countdown} detik</strong>
+            </div>
+            <button
+              onClick={() => { setCountdown(0); }}
+              style={{
+                padding: '7px 18px', borderRadius: 'var(--radius-md)',
+                background: 'var(--primary-500)', color: 'white',
+                border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              }}
+            >
+              Coba Sekarang
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -277,19 +341,6 @@ export default function OverviewPage() {
           <h1 className="page-title">Beranda</h1>
           <p className="page-subtitle">
             Overview portal Satu Data Kota Bogor
-            {isDemo && (
-              <span style={{
-                marginLeft: 12,
-                padding: '2px 10px',
-                background: 'rgba(245,158,11,0.15)',
-                color: '#f59e0b',
-                borderRadius: 20,
-                fontSize: 11,
-                fontWeight: 600,
-              }}>
-                ⚠️ Mode Demo — Database belum terhubung
-              </span>
-            )}
           </p>
         </div>
         <button
@@ -412,7 +463,7 @@ export default function OverviewPage() {
                           background: `${badge.color}20`, color: badge.color,
                         }}>{badge.label}</span>
                         <strong>{activity.username}</strong> {getActivityLabel(activity.type)}{' '}
-                        <strong>{activity.dataset_name}</strong>
+                        <strong style={{ color: 'var(--dataset-link-color)' }}>{activity.dataset_name}</strong>
                       </div>
                       {activity.notes && (
                         <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 2 }}>

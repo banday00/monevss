@@ -86,7 +86,7 @@ export default function KualitasPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  fontWeight: 500, color: 'var(--primary-400)',
+                  fontWeight: 500, color: 'var(--dataset-link-color)',
                   textDecoration: 'none', lineHeight: 1.3, display: 'inline-block',
                 }}
                 onMouseOver={(e) => { (e.target as HTMLElement).style.textDecoration = 'underline'; }}
