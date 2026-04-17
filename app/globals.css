@@ -201,7 +201,6 @@ a:hover {
 .app-layout {
   display: flex;
   min-height: 100vh;
-  zoom: 0.9; /* scale dashboard -10%; login page tidak terpengaruh */
 }
 
 .main-content {
