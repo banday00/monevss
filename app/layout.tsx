@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   title: 'Dashboard Monitoring dan Evaluasi Satu Data Kota Bogor',
   description:
     'Dashboard monitoring internal untuk Portal Satu Data Kota Bogor. Pantau dataset, kualitas data, dan pengumpulan data per organisasi.',
+  icons: {
+    icon: '/favicon-32x32.png',
+    shortcut: '/favicon-32x32.png',
+  },
 };
 
 export default function RootLayout({
