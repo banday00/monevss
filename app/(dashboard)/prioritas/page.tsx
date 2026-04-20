@@ -3,10 +3,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import DataTable from '@/components/ui/DataTable';
 import { formatDate, formatPercentage } from '@/lib/utils/format';
+import DatasetSearchModal from '@/components/prioritas/DatasetSearchModal';
 
 interface PriorityItem {
-  id: number;
-  organization_id: number;
+  id: string;
+  organization_id: number | string | null;
   organisasi_name: string;
   dataset_id: number | null;
   dataset_name: string | null;
@@ -51,6 +52,7 @@ export default function PrioritasPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState(currentYear - 1);
   const [viewMode, setViewMode] = useState<ViewMode>('grouped');
+  const [mappingItem, setMappingItem] = useState<PriorityItem | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -76,11 +78,24 @@ export default function PrioritasPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const handleMapped = useCallback(
+    (priorityId: string, datasetId: number | null, datasetName: string | null) => {
+      setAllItems((prev) =>
+        prev.map((item) =>
+          item.id === priorityId
+            ? { ...item, dataset_id: datasetId, dataset_name: datasetName }
+            : item
+        )
+      );
+    },
+    []
+  );
+
   const detailColumns = [
     {
       key: 'name',
       label: 'Nama Data Prioritas',
-      width: '30%',
+      width: '28%',
       render: (row: PriorityItem) => (
         <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{row.name}</span>
       ),
@@ -88,7 +103,7 @@ export default function PrioritasPage() {
     {
       key: 'organisasi_name',
       label: 'Organisasi',
-      width: '22%',
+      width: '20%',
       render: (row: PriorityItem) => (
         <span style={{ fontSize: 12 }}>{row.organisasi_name}</span>
       ),
@@ -96,7 +111,7 @@ export default function PrioritasPage() {
     {
       key: 'dataset_name',
       label: 'Dataset Terkait',
-      width: '25%',
+      width: '22%',
       render: (row: PriorityItem) => (
         row.dataset_name ? (
           <span style={{ color: 'var(--dataset-link-color)', fontWeight: 500 }}>{row.dataset_name}</span>
@@ -118,9 +133,48 @@ export default function PrioritasPage() {
     {
       key: 'mdate',
       label: 'Update',
-      width: '13%',
+      width: '12%',
       render: (row: PriorityItem) => (
         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatDate(row.mdate)}</span>
+      ),
+    },
+    {
+      key: 'aksi',
+      label: 'Aksi',
+      width: '8%',
+      render: (row: PriorityItem) => (
+        <button
+          onClick={() => setMappingItem(row)}
+          title="Cari & mapping dataset"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 30,
+            height: 30,
+            background: 'transparent',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-md)',
+            cursor: 'pointer',
+            color: 'var(--text-muted)',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary-500)';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary-500)';
+            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(16,185,129,0.08)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-color)';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+        </button>
       ),
     },
   ];
@@ -270,6 +324,14 @@ export default function PrioritasPage() {
             emptyMessage="Tidak ada data prioritas"
           />
         </div>
+      )}
+
+      {mappingItem && (
+        <DatasetSearchModal
+          item={mappingItem}
+          onClose={() => setMappingItem(null)}
+          onMapped={handleMapped}
+        />
       )}
     </div>
   );
