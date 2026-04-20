@@ -75,12 +75,6 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="sidebar-footer">
-        <div className="sidebar-refresh">
-          <span className="sidebar-refresh-dot"></span>
-          <span>Auto-refresh setiap 5 menit</span>
-        </div>
-      </div>
     </aside>
   );
 }
