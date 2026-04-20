@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 
+const OPENDATA_URL = 'https://satudata.kotabogor.go.id/dataset';
+
 interface PriorityItem {
   id: string;
   name: string;
@@ -14,6 +16,7 @@ interface PriorityItem {
 interface DatasetResult {
   id: number;
   name: string;
+  slug: string;
   organisasi_name: string;
   topik_name: string;
   dimensi_awal: string | null;
@@ -332,12 +335,25 @@ export default function DatasetSearchModal({ item, onClose, onMapped }: Props) {
                   <div style={{
                     fontWeight: 600,
                     fontSize: 13,
-                    color: 'var(--text-primary)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}>
-                    {ds.name}
+                    <a
+                      href={`${OPENDATA_URL}/${ds.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        color: 'var(--dataset-link-color)',
+                        textDecoration: 'none',
+                        fontWeight: 600,
+                      }}
+                      onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }}
+                      onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}
+                    >
+                      {ds.name}
+                    </a>
                     {isCurrentMapping && (
                       <span style={{
                         marginLeft: 8,

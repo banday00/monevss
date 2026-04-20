@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 interface DatasetSearchResult {
   id: number;
   name: string;
+  slug: string;
   organisasi_name: string;
   topik_name: string;
   dimensi_awal: string | null;
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     const results = await queryReplika<DatasetSearchResult>(
       `SELECT
-         d.id, d.name, o.name AS organisasi_name, t.name AS topik_name,
+         d.id, d.name, d.slug, o.name AS organisasi_name, t.name AS topik_name,
          MAX(CASE WHEN dm.key = 'Dimensi Dataset Awal'  THEN dm.value END) AS dimensi_awal,
          MAX(CASE WHEN dm.key = 'Dimensi Dataset Akhir' THEN dm.value END) AS dimensi_akhir
        FROM datasets d
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
          AND d.is_deleted = false
          AND d.validate = 'approve'
          AND d.name ILIKE $1
-       GROUP BY d.id, d.name, o.name, t.name
+       GROUP BY d.id, d.name, d.slug, o.name, t.name
        ORDER BY d.name ASC
        LIMIT 20`,
       [`%${q}%`]
