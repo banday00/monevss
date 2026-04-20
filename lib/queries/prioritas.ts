@@ -27,6 +27,10 @@ export async function getPriorityData(year?: number): Promise<PriorityItem[]> {
         WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false AND d.validate = 'approve'
         THEN d.name ELSE NULL 
       END as dataset_name,
+      CASE 
+        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false AND d.validate = 'approve'
+        THEN d.slug ELSE NULL 
+      END as dataset_slug,
       dp.name, dp.year, dp.is_active, dp.cdate, dp.mdate
     FROM data_priority dp
     LEFT JOIN organisasi o ON dp.organization_id = o.id

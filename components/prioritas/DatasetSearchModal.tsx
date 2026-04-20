@@ -8,6 +8,7 @@ interface PriorityItem {
   organisasi_name: string;
   dataset_id: number | null;
   dataset_name: string | null;
+  dataset_slug: string | null;
 }
 
 interface DatasetResult {

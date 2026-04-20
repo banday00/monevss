@@ -5,12 +5,15 @@ import DataTable from '@/components/ui/DataTable';
 import { formatDate, formatPercentage } from '@/lib/utils/format';
 import DatasetSearchModal from '@/components/prioritas/DatasetSearchModal';
 
+const OPENDATA_URL = 'https://satudata.kotabogor.go.id/dataset';
+
 interface PriorityItem {
   id: string;
   organization_id: number | string | null;
   organisasi_name: string;
   dataset_id: number | null;
   dataset_name: string | null;
+  dataset_slug: string | null;
   name: string;
   year: number;
   is_active: boolean;
@@ -114,7 +117,20 @@ export default function PrioritasPage() {
       width: '22%',
       render: (row: PriorityItem) => (
         row.dataset_name ? (
-          <span style={{ color: 'var(--dataset-link-color)', fontWeight: 500 }}>{row.dataset_name}</span>
+          row.dataset_slug ? (
+            <a
+              href={`${OPENDATA_URL}/${row.dataset_slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--dataset-link-color)', fontWeight: 500, textDecoration: 'none' }}
+              onMouseOver={(e) => { (e.target as HTMLElement).style.textDecoration = 'underline'; }}
+              onMouseOut={(e) => { (e.target as HTMLElement).style.textDecoration = 'none'; }}
+            >
+              {row.dataset_name}
+            </a>
+          ) : (
+            <span style={{ color: 'var(--dataset-link-color)', fontWeight: 500 }}>{row.dataset_name}</span>
+          )
         ) : (
           <span className="badge badge-danger">Belum ada dataset</span>
         )
