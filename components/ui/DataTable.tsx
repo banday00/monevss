@@ -68,7 +68,7 @@ export default function DataTable<T>({
   const filtered = useMemo(() => {
     let result: T[];
     if (search && search.length >= 2) {
-      result = fuse.search(search).map((r) => r.item as T);
+      result = fuse.search(search, { limit: 5 }).map((r) => r.item as T);
     } else {
       result = data;
     }
