@@ -33,6 +33,8 @@ export interface DatasetRow {
   // Dimensi dari datasets_metadata
   dimensi_awal: string | null;
   dimensi_akhir: string | null;
+  // Tahun data prioritas yang mapping ke dataset ini
+  priority_years: number[] | null;
 }
 
 export interface DatasetFilters {
@@ -123,7 +125,9 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
       CAST(dqs.details->'details'->'metrics'->'consistency'->>'score'   AS INTEGER) AS qs_consistency,
       -- Dimensi dari datasets_metadata
       dm_awal.value  AS dimensi_awal,
-      dm_akhir.value AS dimensi_akhir
+      dm_akhir.value AS dimensi_akhir,
+      -- Tahun data prioritas
+      dp_years.years AS priority_years
     FROM datasets d
     LEFT JOIN organisasi o ON d.organisasi_id = o.id
     LEFT JOIN topik t ON d.topik_id = t.id
@@ -144,6 +148,13 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
       WHERE dataset_id = d.id AND key = 'Dimensi Dataset Akhir'
       LIMIT 1
     ) dm_akhir ON true
+    LEFT JOIN LATERAL (
+      SELECT array_agg(DISTINCT dp.year ORDER BY dp.year) AS years
+      FROM data_priority dp
+      WHERE dp.dataset_id = d.id
+        AND dp.is_active = true
+        AND dp.is_deleted = false
+    ) dp_years ON true
     WHERE ${conditions.join(' AND ')}
     ORDER BY ${orderBy}`;
 

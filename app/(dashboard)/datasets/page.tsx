@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import DataTable from '@/components/ui/DataTable';
 import FilterBar from '@/components/ui/FilterBar';
 import { formatDate, formatRelativeTime, formatDateTime, truncateText, getScoreColor, getScoreLabel } from '@/lib/utils/format';
@@ -32,6 +32,8 @@ interface DatasetRow {
   // Dimensi dari datasets_metadata
   dimensi_awal: string | null;
   dimensi_akhir: string | null;
+  // Tahun data prioritas
+  priority_years: number[] | null;
 }
 
 interface HistoryItem {
@@ -49,7 +51,7 @@ interface TopikOption { id: number; name: string; }
 const OPENDATA_URL = 'https://satudata.kotabogor.go.id/dataset';
 
 // Demo data
-const demoDatasets: DatasetRow[] = [
+const demoDatasets = ([
   { id: 1, name: 'Jumlah Penduduk per Kecamatan 2026', slug: 'jumlah-penduduk-per-kecamatan-2026', organisasi_name: 'Dinas Kependudukan dan Pencatatan Sipil', topik_name: 'Kependudukan', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: 'change', data_score_status: 'sangat_baik', count_view_opendata: 1250, count_download_opendata: 340, cdate: new Date(Date.now() - 86400000).toISOString(), mdate: new Date(Date.now() - 86400000).toISOString(), qs_score: 92, qs_status: 'sangat_baik', qs_completeness: 95, qs_conformity: 90, qs_timeliness: 93, qs_uniqueness: 100, qs_consistency: 88 },
   { id: 2, name: 'Data Puskesmas Kota Bogor', slug: 'data-puskesmas-kota-bogor', organisasi_name: 'Dinas Kesehatan', topik_name: 'Kesehatan', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: 'edit', data_score_status: 'baik', count_view_opendata: 890, count_download_opendata: 210, cdate: new Date(Date.now() - 172800000).toISOString(), mdate: new Date(Date.now() - 3600000).toISOString(), qs_score: 78, qs_status: 'baik', qs_completeness: 80, qs_conformity: 75, qs_timeliness: 82, qs_uniqueness: 90, qs_consistency: 70 },
   { id: 3, name: 'Realisasi APBD Kota Bogor 2025', slug: 'realisasi-apbd-kota-bogor-2025', organisasi_name: 'Badan Keuangan dan Aset Daerah', topik_name: 'Keuangan', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: 'change', data_score_status: 'sangat_baik', count_view_opendata: 2100, count_download_opendata: 560, cdate: new Date(Date.now() - 259200000).toISOString(), mdate: new Date(Date.now() - 7200000).toISOString(), qs_score: 95, qs_status: 'sangat_baik', qs_completeness: 98, qs_conformity: 95, qs_timeliness: 94, qs_uniqueness: 100, qs_consistency: 92 },
@@ -60,9 +62,9 @@ const demoDatasets: DatasetRow[] = [
   { id: 8, name: 'Data UMKM Kota Bogor', slug: 'data-umkm-kota-bogor', organisasi_name: 'Dinas Koperasi dan UKM', topik_name: 'Ekonomi', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: null, data_score_status: null, count_view_opendata: 1450, count_download_opendata: 380, cdate: new Date(Date.now() - 691200000).toISOString(), mdate: new Date(Date.now() - 691200000).toISOString(), qs_score: null, qs_status: null, qs_completeness: null, qs_conformity: null, qs_timeliness: null, qs_uniqueness: null, qs_consistency: null },
   { id: 9, name: 'Tingkat Pengangguran Terbuka', slug: 'tingkat-pengangguran-terbuka', organisasi_name: 'Dinas Tenaga Kerja', topik_name: 'Ketenagakerjaan', periode: 'Semester', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: 'edit', data_score_status: 'baik', count_view_opendata: 980, count_download_opendata: 260, cdate: new Date(Date.now() - 1200000000).toISOString(), mdate: new Date(Date.now() - 43200000).toISOString(), qs_score: 76, qs_status: 'baik', qs_completeness: 78, qs_conformity: 74, qs_timeliness: 77, qs_uniqueness: 85, qs_consistency: 72 },
   { id: 10, name: 'Jumlah Sekolah per Jenjang', slug: 'jumlah-sekolah-per-jenjang', organisasi_name: 'Dinas Pendidikan', topik_name: 'Pendidikan', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: 'change', data_score_status: 'sangat_baik', count_view_opendata: 540, count_download_opendata: 130, cdate: new Date(Date.now() - 1500000000).toISOString(), mdate: new Date(Date.now() - 86400000).toISOString(), qs_score: 89, qs_status: 'sangat_baik', qs_completeness: 92, qs_conformity: 88, qs_timeliness: 90, qs_uniqueness: 95, qs_consistency: 85 },
-  { id: 11, name: 'Data Pasar Tradisional', slug: 'data-pasar-tradisional', organisasi_name: 'Dinas Perdagangan dan Perindustrian', topik_name: 'Ekonomi', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: null, data_score_status: null, count_view_opendata: 290, count_download_opendata: 75, cdate: new Date(Date.now() - 2000000000).toISOString(), mdate: new Date(Date.now() - 2000000000).toISOString(), qs_score: null, qs_status: null, qs_completeness: null, qs_conformity: null, qs_timeliness: null, qs_uniqueness: null, qs_consistency: null },
-  { id: 12, name: 'Luas Wilayah per Kecamatan', slug: 'luas-wilayah-per-kecamatan', organisasi_name: 'Dinas Pekerjaan Umum dan Penataan Ruang', topik_name: 'Infrastruktur', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: 'edit', data_score_status: 'cukup', count_view_opendata: 710, count_download_opendata: 195, cdate: new Date(Date.now() - 2500000000).toISOString(), mdate: new Date(Date.now() - 172800000).toISOString(), qs_score: 58, qs_status: 'cukup', qs_completeness: 60, qs_conformity: 55, qs_timeliness: 58, qs_uniqueness: 72, qs_consistency: 52 },
-];
+  { id: 11, name: 'Data Pasar Tradisional', slug: 'data-pasar-tradisional', organisasi_name: 'Dinas Perdagangan dan Perindustrian', topik_name: 'Ekonomi', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: null, data_score_status: null, count_view_opendata: 290, count_download_opendata: 75, cdate: new Date(Date.now() - 2000000000).toISOString(), mdate: new Date(Date.now() - 2000000000).toISOString(), qs_score: null, qs_status: null, qs_completeness: null, qs_conformity: null, qs_timeliness: null, qs_uniqueness: null, qs_consistency: null, dimensi_awal: null, dimensi_akhir: null, priority_years: null },
+  { id: 12, name: 'Luas Wilayah per Kecamatan', slug: 'luas-wilayah-per-kecamatan', organisasi_name: 'Dinas Pekerjaan Umum dan Penataan Ruang', topik_name: 'Infrastruktur', periode: 'Tahunan', kategori: 'Data', klasifikasi: 'Terbuka', is_active: true, validate: 'edit', data_score_status: 'cukup', count_view_opendata: 710, count_download_opendata: 195, cdate: new Date(Date.now() - 2500000000).toISOString(), mdate: new Date(Date.now() - 172800000).toISOString(), qs_score: 58, qs_status: 'cukup', qs_completeness: 60, qs_conformity: 55, qs_timeliness: 58, qs_uniqueness: 72, qs_consistency: 52, dimensi_awal: null, dimensi_akhir: null, priority_years: null },
+] as DatasetRow[]);
 
 const demoOrgs: OrgOption[] = [
   { id: 1, name: 'Dinas Kesehatan' }, { id: 2, name: 'Dinas Pendidikan' },
@@ -382,6 +384,32 @@ export default function DatasetsPage() {
       },
     },
     {
+      key: 'priority_years',
+      label: 'Prioritas',
+      width: '9%',
+      render: (row: DatasetRow) => {
+        const years = row.priority_years;
+        if (!years || years.length === 0) {
+          return <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>;
+        }
+        return (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            {years.map((y) => (
+              <span key={y} style={{
+                fontSize: 10,
+                fontWeight: 700,
+                padding: '1px 6px',
+                borderRadius: 4,
+                background: 'rgba(139,92,246,0.1)',
+                border: '1px solid rgba(139,92,246,0.25)',
+                color: '#8b5cf6',
+              }}>{y}</span>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
       key: 'aksi',
       label: 'Aksi',
       width: '7%',
@@ -397,6 +425,14 @@ export default function DatasetsPage() {
       ),
     },
   ];
+
+  const prevYear = new Date().getFullYear() - 1;
+  const getRowStyle = (row: DatasetRow): React.CSSProperties => {
+    if (row.dimensi_akhir && parseInt(row.dimensi_akhir, 10) === prevYear) {
+      return { background: 'rgba(245,158,11,0.07)', borderLeft: '3px solid rgba(245,158,11,0.4)' };
+    }
+    return {};
+  };
 
   return (
     <div>
@@ -497,6 +533,7 @@ export default function DatasetsPage() {
             pageSize={25}
             searchPlaceholder="Cari nama dataset atau organisasi..."
             emptyMessage="Tidak ada dataset ditemukan"
+            rowStyle={getRowStyle}
           />
         )}
       </div>

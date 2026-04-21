@@ -18,6 +18,7 @@ interface DataTableProps<T> {
   searchPlaceholder?: string;
   emptyMessage?: string;
   onRowClick?: (row: T) => void;
+  rowStyle?: (row: T) => React.CSSProperties;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -33,6 +34,7 @@ export default function DataTable<T>({
   searchPlaceholder = 'Cari...',
   emptyMessage = 'Tidak ada data',
   onRowClick,
+  rowStyle,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -131,7 +133,7 @@ export default function DataTable<T>({
                 <tr
                   key={i}
                   onClick={() => onRowClick?.(row)}
-                  style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                  style={{ cursor: onRowClick ? 'pointer' : 'default', ...rowStyle?.(row) }}
                 >
                   {columns.map((col) => (
                     <td key={col.key}>
