@@ -110,7 +110,7 @@ export default function DataTable<T>({
             placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            style={{ maxWidth: 320 }}
+            style={{ maxWidth: 640 }}
           />
         </div>
       )}
