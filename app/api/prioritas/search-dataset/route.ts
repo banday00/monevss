@@ -11,6 +11,7 @@ interface DatasetSearchResult {
   topik_name: string;
   dimensi_awal: string | null;
   dimensi_akhir: string | null;
+  similarity: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -25,7 +26,8 @@ export async function GET(request: NextRequest) {
       `SELECT
          d.id, d.name, d.slug, o.name AS organisasi_name, t.name AS topik_name,
          MAX(CASE WHEN dm.key = 'Dimensi Dataset Awal'  THEN dm.value END) AS dimensi_awal,
-         MAX(CASE WHEN dm.key = 'Dimensi Dataset Akhir' THEN dm.value END) AS dimensi_akhir
+         MAX(CASE WHEN dm.key = 'Dimensi Dataset Akhir' THEN dm.value END) AS dimensi_akhir,
+         word_similarity($2, d.name) AS similarity
        FROM datasets d
        LEFT JOIN organisasi o ON d.organisasi_id = o.id
        LEFT JOIN topik t ON d.topik_id = t.id
@@ -33,11 +35,14 @@ export async function GET(request: NextRequest) {
        WHERE d.is_active = true
          AND d.is_deleted = false
          AND d.validate = 'approve'
-         AND d.name ILIKE $1
+         AND (
+           d.name ILIKE $1
+           OR word_similarity($2, d.name) > 0.15
+         )
        GROUP BY d.id, d.name, d.slug, o.name, t.name
-       ORDER BY d.name ASC
-       LIMIT 20`,
-      [`%${q}%`]
+       ORDER BY similarity DESC, d.name ASC
+       LIMIT 25`,
+      [`%${q}%`, q]
     );
 
     return NextResponse.json({ results });
