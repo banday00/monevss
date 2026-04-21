@@ -264,8 +264,11 @@ export default function PengumpulanPage() {
           )}
 
           {/* Stat Cards Unlinked */}
-          <div style={{ marginBottom: 8, fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          <div style={{ marginBottom: 8, fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 8 }}>
             📌 Status Keterhubungan Dataset ke Data Prioritas
+            <span style={{ fontWeight: 700, color: 'var(--primary-500)', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 4, padding: '1px 8px', fontSize: 11 }}>
+              Tahun {selectedYear}
+            </span>
           </div>
           <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
             {[

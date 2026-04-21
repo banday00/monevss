@@ -182,7 +182,9 @@ export interface UnlinkedStats {
   top_opd: UnlinkedOPD[];
 }
 
-export async function getUnlinkedStats(): Promise<UnlinkedStats> {
+export async function getUnlinkedStats(year?: number): Promise<UnlinkedStats> {
+  const targetYear = year || new Date().getFullYear() - 1;
+
   const [summaryRows, opdRows] = await Promise.all([
     queryReplika<{
       total_datasets: string;
@@ -198,9 +200,12 @@ export async function getUnlinkedStats(): Promise<UnlinkedStats> {
         COUNT(CASE WHEN dp.dataset_id IS NULL AND d.cdate >= NOW() - INTERVAL '30 days' THEN 1 END) AS baru_30hari,
         COUNT(CASE WHEN dp.dataset_id IS NULL AND d.mdate::date > d.cdate::date          THEN 1 END) AS diupdate_belum_linked
       FROM datasets d
-      LEFT JOIN (SELECT DISTINCT dataset_id FROM data_priority) dp ON dp.dataset_id = d.id
+      LEFT JOIN (
+        SELECT DISTINCT dataset_id FROM data_priority
+        WHERE year = $1 AND is_active = true AND is_deleted = false
+      ) dp ON dp.dataset_id = d.id
       WHERE d.is_active = true AND d.is_deleted = false
-    `),
+    `, [targetYear]),
 
     queryReplika<{
       opd: string;
@@ -213,13 +218,16 @@ export async function getUnlinkedStats(): Promise<UnlinkedStats> {
         COUNT(CASE WHEN dp.dataset_id IS NULL THEN 1 END)                  AS belum_linked
       FROM datasets d
       JOIN organisasi o ON o.id = d.organisasi_id
-      LEFT JOIN (SELECT DISTINCT dataset_id FROM data_priority) dp ON dp.dataset_id = d.id
+      LEFT JOIN (
+        SELECT DISTINCT dataset_id FROM data_priority
+        WHERE year = $1 AND is_active = true AND is_deleted = false
+      ) dp ON dp.dataset_id = d.id
       WHERE d.is_active = true AND d.is_deleted = false
       GROUP BY o.name
       HAVING COUNT(CASE WHEN dp.dataset_id IS NULL THEN 1 END) > 0
       ORDER BY belum_linked DESC
       LIMIT 10
-    `),
+    `, [targetYear]),
   ]);
 
   const s = summaryRows[0];

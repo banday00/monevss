@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const [perOrganisasi, yearly, unlinked] = await Promise.all([
       getPengumpulanData(year),
       getPengumpulanYearly(5),
-      getUnlinkedStats(),
+      getUnlinkedStats(year),
     ]);
 
     // Calculate overall summary
