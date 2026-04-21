@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import DataTable from '@/components/ui/DataTable';
 import FilterBar from '@/components/ui/FilterBar';
 import { formatDate, formatRelativeTime, formatDateTime, truncateText, getScoreColor, getScoreLabel } from '@/lib/utils/format';
@@ -126,6 +127,7 @@ function getDefaultDates() {
 }
 
 export default function DatasetsPage() {
+  const router = useRouter();
   const [data, setData] = useState<DatasetRow[]>([]);
   const [orgOptions, setOrgOptions] = useState<OrgOption[]>([]);
   const [topikOptions, setTopikOptions] = useState<TopikOption[]>([]);
@@ -415,13 +417,49 @@ export default function DatasetsPage() {
       width: '7%',
       sortable: false,
       render: (row: DatasetRow) => (
-        <button
-          className="btn-lacak"
-          onClick={(e) => { e.stopPropagation(); handleLacak(row); }}
-          title="Lacak history dataset"
-        >
-          🔍 Lacak
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <button
+            className="btn-lacak"
+            onClick={(e) => { e.stopPropagation(); handleLacak(row); }}
+            title="Lacak history dataset"
+          >
+            🔍 Lacak
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/prioritas?year=${prevYear}&search=${encodeURIComponent(row.name)}`);
+            }}
+            title={`Lihat di Data Prioritas ${prevYear}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 28,
+              height: 28,
+              background: 'transparent',
+              border: '1px solid rgba(139,92,246,0.3)',
+              borderRadius: 'var(--radius-md)',
+              cursor: 'pointer',
+              color: '#8b5cf6',
+              transition: 'all 0.15s',
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(139,92,246,0.1)';
+              (e.currentTarget as HTMLButtonElement).style.borderColor = '#8b5cf6';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(139,92,246,0.3)';
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+          </button>
+        </div>
       ),
     },
   ];

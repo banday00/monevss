@@ -19,6 +19,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   onRowClick?: (row: T) => void;
   rowStyle?: (row: T) => React.CSSProperties;
+  initialSearch?: string;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -35,8 +36,9 @@ export default function DataTable<T>({
   emptyMessage = 'Tidak ada data',
   onRowClick,
   rowStyle,
+  initialSearch = '',
 }: DataTableProps<T>) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);

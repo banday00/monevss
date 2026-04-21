@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import DataTable from '@/components/ui/DataTable';
 import { formatDate, formatPercentage } from '@/lib/utils/format';
 import DatasetSearchModal from '@/components/prioritas/DatasetSearchModal';
@@ -45,16 +46,21 @@ function getProgressColor(pct: number): string {
 
 type ViewMode = 'grouped' | 'detail';
 
-export default function PrioritasPage() {
+function PrioritasPageContent() {
   const [grouped, setGrouped] = useState<GroupedOrg[]>([]);
   const [allItems, setAllItems] = useState<PriorityItem[]>([]);
   const [summary, setSummary] = useState<PrioritySummary>({ total: 0, fulfilled: 0, unfulfilled: 0, percentage: 0 });
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 1 - i).reverse();
+  const searchParams = useSearchParams();
+  const urlYear = parseInt(searchParams.get('year') ?? '', 10);
+  const urlSearch = searchParams.get('search') ?? '';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState(currentYear - 1);
-  const [viewMode, setViewMode] = useState<ViewMode>('grouped');
+  const [selectedYear, setSelectedYear] = useState(
+    !isNaN(urlYear) && years.includes(urlYear) ? urlYear : currentYear - 1
+  );
+  const [viewMode, setViewMode] = useState<ViewMode>(urlSearch ? 'detail' : 'grouped');
   const [mappingItem, setMappingItem] = useState<PriorityItem | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -338,6 +344,7 @@ export default function PrioritasPage() {
             pageSize={20}
             searchPlaceholder="Cari nama data prioritas atau organisasi..."
             emptyMessage="Tidak ada data prioritas"
+            initialSearch={urlSearch}
           />
         </div>
       )}
@@ -350,5 +357,13 @@ export default function PrioritasPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function PrioritasPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 32, color: 'var(--text-muted)' }}>Memuat...</div>}>
+      <PrioritasPageContent />
+    </Suspense>
   );
 }
