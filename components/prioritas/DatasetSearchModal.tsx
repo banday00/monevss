@@ -335,9 +335,7 @@ export default function DatasetSearchModal({ item, onClose, onMapped }: Props) {
                   <div style={{
                     fontWeight: 600,
                     fontSize: 13,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    lineHeight: 1.4,
                   }}>
                     <a
                       href={`${OPENDATA_URL}/${ds.slug}`}
