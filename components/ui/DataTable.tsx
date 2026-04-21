@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Fuse from 'fuse.js';
 
 interface Column<T> {
   key: string;
@@ -43,16 +44,33 @@ export default function DataTable<T>({
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
 
+  // Keys to search on: all sortable columns with string-like values
+  const fuseKeys = useMemo(
+    () => columns.filter((c) => c.sortable !== false).map((c) => c.key),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [columns.map((c) => c.key).join(',')]
+  );
+
+  const fuse = useMemo(
+    () =>
+      new Fuse(data as Record<string, unknown>[], {
+        keys: fuseKeys,
+        threshold: 0.4,
+        ignoreLocation: true,
+        minMatchCharLength: 2,
+        shouldSort: true,
+        includeScore: false,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, fuseKeys.join(',')]
+  );
+
   const filtered = useMemo(() => {
-    let result = data;
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter((row) =>
-        columns.some((col) => {
-          const val = getVal(row, col.key);
-          return val != null && String(val).toLowerCase().includes(q);
-        })
-      );
+    let result: T[];
+    if (search && search.length >= 2) {
+      result = fuse.search(search).map((r) => r.item as T);
+    } else {
+      result = data;
     }
     if (sortKey) {
       result = [...result].sort((a, b) => {
@@ -67,7 +85,7 @@ export default function DataTable<T>({
       });
     }
     return result;
-  }, [data, search, sortKey, sortDir, columns]);
+  }, [data, search, sortKey, sortDir, fuse]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
