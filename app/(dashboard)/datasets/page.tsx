@@ -131,6 +131,7 @@ export default function DatasetsPage() {
   const [topikOptions, setTopikOptions] = useState<TopikOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [refreshingIds, setRefreshingIds] = useState<Set<number>>(new Set());
   const [tab, setTab] = useState<TabType>('all');
   const [filters, setFilters] = useState<Record<string, string>>(() => {
     const { start_date, end_date } = getDefaultDates();
@@ -207,6 +208,41 @@ export default function DatasetsPage() {
     all: data.length,
     new: isDemo ? demoDatasets.filter((d) => d.is_active && (d.validate === 'verification' || d.validate === 'new')).length : 0,
     updated: isDemo ? demoDatasets.filter((d) => d.is_active && (d.validate === 'change' || d.validate === 'edit')).length : 0,
+  };
+
+  const handleRefreshRow = async (id: number) => {
+    if (refreshingIds.has(id)) return;
+    setRefreshingIds((prev) => new Set(prev).add(id));
+    try {
+      const res = await fetch(`/api/datasets/${id}/refresh`);
+      if (!res.ok) throw new Error('API error');
+      const fresh = await res.json();
+      setData((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? {
+                ...row,
+                qs_score:        fresh.qs_score,
+                qs_status:       fresh.qs_status,
+                qs_completeness: fresh.qs_completeness,
+                qs_conformity:   fresh.qs_conformity,
+                qs_timeliness:   fresh.qs_timeliness,
+                qs_uniqueness:   fresh.qs_uniqueness,
+                qs_consistency:  fresh.qs_consistency,
+                priority_years:  fresh.priority_years,
+              }
+            : row
+        )
+      );
+    } catch {
+      // silently ignore – user can retry
+    } finally {
+      setRefreshingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
   };
 
   const columns = [
@@ -412,55 +448,93 @@ export default function DatasetsPage() {
     {
       key: 'aksi',
       label: 'Aksi',
-      width: '7%',
+      width: '8%',
       sortable: false,
-      render: (row: DatasetRow) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <button
-            className="btn-lacak"
-            onClick={(e) => { e.stopPropagation(); handleLacak(row); }}
-            title="Lacak history dataset"
-          >
-            🔍 Lacak
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(`/prioritas?year=${prevYear}&search=${encodeURIComponent(row.name)}`, '_blank');
-            }}
-            title={`Lihat di Data Prioritas ${prevYear}`}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 28,
-              height: 28,
-              background: 'transparent',
-              border: '1px solid rgba(139,92,246,0.3)',
-              borderRadius: 'var(--radius-md)',
-              cursor: 'pointer',
-              color: '#8b5cf6',
-              transition: 'all 0.15s',
-              flexShrink: 0,
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(139,92,246,0.1)';
-              (e.currentTarget as HTMLButtonElement).style.borderColor = '#8b5cf6';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(139,92,246,0.3)';
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-            </svg>
-          </button>
-        </div>
-      ),
+      render: (row: DatasetRow) => {
+        const isRefreshing = refreshingIds.has(row.id);
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {/* Lacak icon */}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleLacak(row); }}
+              title="Lacak history dataset"
+              style={iconBtnStyle('var(--text-muted)', 'var(--border-color)', 'var(--primary-500)', 'rgba(16,185,129,0.08)')}
+              onMouseEnter={(e) => applyHover(e, 'var(--primary-500)', 'rgba(16,185,129,0.08)')}
+              onMouseLeave={(e) => clearHover(e, 'var(--text-muted)', 'var(--border-color)')}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+            {/* Refresh icon */}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRefreshRow(row.id); }}
+              title="Refresh skor kualitas & data prioritas"
+              disabled={isRefreshing}
+              style={iconBtnStyle('#3b82f6', 'rgba(59,130,246,0.3)', '#3b82f6', 'rgba(59,130,246,0.1)')}
+              onMouseEnter={(e) => { if (!isRefreshing) applyHover(e, '#3b82f6', 'rgba(59,130,246,0.1)'); }}
+              onMouseLeave={(e) => { if (!isRefreshing) clearHover(e, '#3b82f6', 'rgba(59,130,246,0.3)'); }}
+            >
+              <svg
+                width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                style={{ animation: isRefreshing ? 'spin 0.8s linear infinite' : 'none' }}
+              >
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 21v-5h5" />
+              </svg>
+            </button>
+            {/* Prioritas icon */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`/prioritas?year=${prevYear}&search=${encodeURIComponent(row.name)}`, '_blank');
+              }}
+              title={`Lihat di Data Prioritas ${prevYear}`}
+              style={iconBtnStyle('#8b5cf6', 'rgba(139,92,246,0.3)', '#8b5cf6', 'rgba(139,92,246,0.1)')}
+              onMouseEnter={(e) => applyHover(e, '#8b5cf6', 'rgba(139,92,246,0.1)')}
+              onMouseLeave={(e) => clearHover(e, '#8b5cf6', 'rgba(139,92,246,0.3)')}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+            </button>
+          </div>
+        );
+      },
     },
   ];
+
+  // ── icon button helpers ──────────────────────────────────────
+  function iconBtnStyle(color: string, border: string, _hoverColor: string, _hoverBg: string): React.CSSProperties {
+    return {
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 26, height: 26,
+      background: 'transparent',
+      border: `1px solid ${border}`,
+      borderRadius: 'var(--radius-md)',
+      cursor: 'pointer',
+      color,
+      transition: 'all 0.15s',
+      flexShrink: 0,
+      padding: 0,
+    };
+  }
+  function applyHover(e: React.MouseEvent, color: string, bg: string) {
+    const el = e.currentTarget as HTMLButtonElement;
+    el.style.color = color;
+    el.style.background = bg;
+    el.style.borderColor = color;
+  }
+  function clearHover(e: React.MouseEvent, color: string, border: string) {
+    const el = e.currentTarget as HTMLButtonElement;
+    el.style.color = color;
+    el.style.background = 'transparent';
+    el.style.borderColor = border;
+  }
 
   const prevYear = new Date().getFullYear() - 1;
   const getRowStyle = (row: DatasetRow): React.CSSProperties => {
