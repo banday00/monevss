@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import DataTable from '@/components/ui/DataTable';
 import FilterBar from '@/components/ui/FilterBar';
 import { formatDate, formatRelativeTime, formatDateTime, truncateText, getScoreColor, getScoreLabel } from '@/lib/utils/format';
@@ -127,7 +126,6 @@ function getDefaultDates() {
 }
 
 export default function DatasetsPage() {
-  const router = useRouter();
   const [data, setData] = useState<DatasetRow[]>([]);
   const [orgOptions, setOrgOptions] = useState<OrgOption[]>([]);
   const [topikOptions, setTopikOptions] = useState<TopikOption[]>([]);
@@ -428,7 +426,7 @@ export default function DatasetsPage() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/prioritas?year=${prevYear}&search=${encodeURIComponent(row.name)}`);
+              window.open(`/prioritas?year=${prevYear}&search=${encodeURIComponent(row.name)}`, '_blank');
             }}
             title={`Lihat di Data Prioritas ${prevYear}`}
             style={{
