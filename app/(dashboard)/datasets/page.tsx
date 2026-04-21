@@ -29,6 +29,9 @@ interface DatasetRow {
   qs_timeliness: number | null;
   qs_uniqueness: number | null;
   qs_consistency: number | null;
+  // Dimensi dari datasets_metadata
+  dimensi_awal: string | null;
+  dimensi_akhir: string | null;
 }
 
 interface HistoryItem {
@@ -325,7 +328,7 @@ export default function DatasetsPage() {
     {
       key: tab === 'new' ? 'cdate' : 'mdate',
       label: tab === 'new' ? 'Dibuat' : 'Diupdate',
-      width: '12%',
+      width: '10%',
       render: (row: DatasetRow) => {
         const dateVal = tab === 'new' ? row.cdate : row.mdate;
         return (
@@ -337,9 +340,51 @@ export default function DatasetsPage() {
       },
     },
     {
+      key: 'dimensi',
+      label: 'Dimensi',
+      width: '9%',
+      render: (row: DatasetRow) => {
+        if (!row.dimensi_awal && !row.dimensi_akhir) {
+          return <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>;
+        }
+        return (
+          <div style={{ fontSize: 11, lineHeight: 1.5 }}>
+            {row.dimensi_awal && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>Awal</span>
+                <span style={{
+                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  background: 'rgba(59,130,246,0.08)',
+                  border: '1px solid rgba(59,130,246,0.2)',
+                  borderRadius: 4,
+                  padding: '0 5px',
+                  fontSize: 11,
+                }}>{row.dimensi_awal}</span>
+              </div>
+            )}
+            {row.dimensi_akhir && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>Akhir</span>
+                <span style={{
+                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  background: 'rgba(16,185,129,0.08)',
+                  border: '1px solid rgba(16,185,129,0.2)',
+                  borderRadius: 4,
+                  padding: '0 5px',
+                  fontSize: 11,
+                }}>{row.dimensi_akhir}</span>
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       key: 'aksi',
       label: 'Aksi',
-      width: '8%',
+      width: '7%',
       sortable: false,
       render: (row: DatasetRow) => (
         <button

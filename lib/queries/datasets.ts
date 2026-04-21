@@ -30,6 +30,9 @@ export interface DatasetRow {
   qs_timeliness: number | null;
   qs_uniqueness: number | null;
   qs_consistency: number | null;
+  // Dimensi dari datasets_metadata
+  dimensi_awal: string | null;
+  dimensi_akhir: string | null;
 }
 
 export interface DatasetFilters {
@@ -117,7 +120,10 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
       CAST(dqs.details->'details'->'metrics'->'conformity'->>'score'    AS INTEGER) AS qs_conformity,
       CAST(dqs.details->'details'->'metrics'->'timeliness'->>'score'    AS INTEGER) AS qs_timeliness,
       CAST(dqs.details->'details'->'metrics'->'uniqueness'->>'score'    AS INTEGER) AS qs_uniqueness,
-      CAST(dqs.details->'details'->'metrics'->'consistency'->>'score'   AS INTEGER) AS qs_consistency
+      CAST(dqs.details->'details'->'metrics'->'consistency'->>'score'   AS INTEGER) AS qs_consistency,
+      -- Dimensi dari datasets_metadata
+      dm_awal.value  AS dimensi_awal,
+      dm_akhir.value AS dimensi_akhir
     FROM datasets d
     LEFT JOIN organisasi o ON d.organisasi_id = o.id
     LEFT JOIN topik t ON d.topik_id = t.id
@@ -128,6 +134,16 @@ export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset
       ORDER BY timestamp DESC
       LIMIT 1
     ) dqs ON true
+    LEFT JOIN LATERAL (
+      SELECT value FROM datasets_metadata
+      WHERE dataset_id = d.id AND key = 'Dimensi Dataset Awal'
+      LIMIT 1
+    ) dm_awal ON true
+    LEFT JOIN LATERAL (
+      SELECT value FROM datasets_metadata
+      WHERE dataset_id = d.id AND key = 'Dimensi Dataset Akhir'
+      LIMIT 1
+    ) dm_akhir ON true
     WHERE ${conditions.join(' AND ')}
     ORDER BY ${orderBy}`;
 
