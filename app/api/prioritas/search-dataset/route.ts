@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
          )
        GROUP BY d.id, d.name, d.slug, o.name, t.name
        ORDER BY similarity DESC, d.name ASC
-       LIMIT 10`,
+       LIMIT 5`,
       [`%${q}%`, q]
     );
 
