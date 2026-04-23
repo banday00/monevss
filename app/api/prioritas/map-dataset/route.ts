@@ -16,16 +16,29 @@ export async function PATCH(request: NextRequest) {
     }
 
     const parsedDatasetId = dataset_id != null ? parseInt(String(dataset_id), 10) : null;
+    const isMapping = parsedDatasetId != null && !isNaN(parsedDatasetId);
 
-    // Update mapping + status_priority sekaligus di data_priority
-    await queryReplika(
-      `UPDATE data_priority
-       SET dataset_id       = $1,
-           status_priority  = ($1 IS NOT NULL),
-           mdate            = NOW()
-       WHERE id = $2`,
-      [parsedDatasetId ?? null, priority_id]
-    );
+    if (isMapping) {
+      // Map: isi dataset_id dan tandai status_priority = true
+      await queryReplika(
+        `UPDATE data_priority
+         SET dataset_id      = $1,
+             status_priority = true,
+             mdate           = NOW()
+         WHERE id = $2`,
+        [parsedDatasetId, priority_id]
+      );
+    } else {
+      // Unmap: kosongkan dataset_id dan reset status_priority = false
+      await queryReplika(
+        `UPDATE data_priority
+         SET dataset_id      = NULL,
+             status_priority = false,
+             mdate           = NOW()
+         WHERE id = $1`,
+        [priority_id]
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
