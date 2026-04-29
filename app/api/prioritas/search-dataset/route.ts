@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
        LEFT JOIN datasets_metadata dm ON dm.dataset_id = d.id
        WHERE d.is_active = true
          AND d.is_deleted = false
-         AND d.validate = 'approve'
+         AND d.validate IN ('approve', 'change')
          AND (
            d.name ILIKE $1
            OR word_similarity($2, d.name) > 0.15
