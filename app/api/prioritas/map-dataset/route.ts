@@ -28,7 +28,21 @@ export async function PATCH(request: NextRequest) {
          WHERE id = $2`,
         [parsedDatasetId, priority_id]
       );
+      // Update priority_level di tabel datasets
+      await queryReplika(
+        `UPDATE datasets
+         SET priority_level = 'priority'
+         WHERE id = $1`,
+        [parsedDatasetId]
+      );
     } else {
+      // Ambil dataset_id lama sebelum di-unmap
+      const rows = await queryReplika<{ dataset_id: number | null }>(
+        `SELECT dataset_id FROM data_priority WHERE id = $1`,
+        [priority_id]
+      );
+      const oldDatasetId = rows[0]?.dataset_id ?? null;
+
       // Unmap: kosongkan dataset_id dan reset status_priority = false
       await queryReplika(
         `UPDATE data_priority
@@ -38,6 +52,15 @@ export async function PATCH(request: NextRequest) {
          WHERE id = $1`,
         [priority_id]
       );
+      // Update priority_level di tabel datasets menjadi non-priority
+      if (oldDatasetId != null) {
+        await queryReplika(
+          `UPDATE datasets
+           SET priority_level = 'non-priority'
+           WHERE id = $1`,
+          [oldDatasetId]
+        );
+      }
     }
 
     return NextResponse.json({ success: true });
