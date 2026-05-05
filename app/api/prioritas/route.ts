@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       }
       grouped[key].items.push(item);
       grouped[key].total++;
-      if (item.dataset_id) grouped[key].fulfilled++;
+      if (item.dataset_id && item.dataset_validate === 'approve') grouped[key].fulfilled++;
     });
 
     Object.values(grouped).forEach((g) => {
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     });
 
     const totalAll = data.length;
-    const fulfilledAll = data.filter((d) => d.dataset_id).length;
+    const fulfilledAll = data.filter((d) => d.dataset_id && d.dataset_validate === 'approve').length;
 
     const sortedAll = [...data].sort((a, b) => {
       const aHas = a.dataset_id ? 1 : 0;

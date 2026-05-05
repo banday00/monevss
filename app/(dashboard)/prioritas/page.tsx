@@ -15,6 +15,7 @@ interface PriorityItem {
   dataset_id: number | null;
   dataset_name: string | null;
   dataset_slug: string | null;
+  dataset_validate: string | null; // 'approve' | 'validate' | 'edit' | 'change' | null
   name: string;
   year: number;
   is_active: boolean;
@@ -120,37 +121,80 @@ function PrioritasPageContent() {
     {
       key: 'dataset_name',
       label: 'Dataset Terkait',
-      width: '22%',
-      render: (row: PriorityItem) => (
-        row.dataset_name ? (
-          row.dataset_slug ? (
-            <a
-              href={`${OPENDATA_URL}/${row.dataset_slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'var(--dataset-link-color)', fontWeight: 500, textDecoration: 'none' }}
-              onMouseOver={(e) => { (e.target as HTMLElement).style.textDecoration = 'underline'; }}
-              onMouseOut={(e) => { (e.target as HTMLElement).style.textDecoration = 'none'; }}
-            >
-              {row.dataset_name}
-            </a>
-          ) : (
-            <span style={{ color: 'var(--dataset-link-color)', fontWeight: 500 }}>{row.dataset_name}</span>
-          )
+      width: '30%',
+      render: (row: PriorityItem) => {
+        if (!row.dataset_name) {
+          return <span className="badge badge-danger">Belum ada dataset</span>;
+        }
+
+        // Badge config per validate status
+        const validateBadge: Record<string, { label: string; bg: string; color: string; icon: string }> = {
+          approve: { label: 'Approved',       bg: 'rgba(16,185,129,0.12)', color: '#059669', icon: '✓' },
+          validate: { label: 'Menunggu Validasi', bg: 'rgba(245,158,11,0.12)', color: '#d97706', icon: '⏳' },
+          edit:    { label: 'Dalam Edit',     bg: 'rgba(59,130,246,0.12)', color: '#2563eb', icon: '✏️' },
+          change:  { label: 'Perlu Revisi',   bg: 'rgba(239,68,68,0.12)',  color: '#dc2626', icon: '🔄' },
+        };
+        const vStatus = row.dataset_validate ?? 'unknown';
+        const badge = validateBadge[vStatus] ?? { label: vStatus, bg: 'rgba(107,114,128,0.12)', color: '#6b7280', icon: '?' };
+
+        const nameEl = row.dataset_slug ? (
+          <a
+            href={`${OPENDATA_URL}/${row.dataset_slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--dataset-link-color)', fontWeight: 500, textDecoration: 'none' }}
+            onMouseOver={(e) => { (e.target as HTMLElement).style.textDecoration = 'underline'; }}
+            onMouseOut={(e) => { (e.target as HTMLElement).style.textDecoration = 'none'; }}
+          >
+            {row.dataset_name}
+          </a>
         ) : (
-          <span className="badge badge-danger">Belum ada dataset</span>
-        )
-      ),
+          <span style={{ color: 'var(--dataset-link-color)', fontWeight: 500 }}>{row.dataset_name}</span>
+        );
+
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {nameEl}
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 11,
+              fontWeight: 600,
+              padding: '2px 7px',
+              borderRadius: 99,
+              background: badge.bg,
+              color: badge.color,
+              width: 'fit-content',
+            }}>
+              {badge.icon} {badge.label}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'dataset_id',
       label: 'Status',
       width: '10%',
-      render: (row: PriorityItem) => (
-        <span className={`badge ${row.dataset_id ? 'badge-success' : 'badge-danger'}`}>
-          {row.dataset_id ? '✓ Terpenuhi' : '✗ Belum'}
-        </span>
-      ),
+      render: (row: PriorityItem) => {
+        if (!row.dataset_id) {
+          return <span className="badge badge-danger">✗ Belum</span>;
+        }
+        if (row.dataset_validate === 'approve') {
+          return <span className="badge badge-success">✓ Terpenuhi</span>;
+        }
+        // Dataset sudah di-mapping tapi belum approve
+        return (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99,
+            background: 'rgba(245,158,11,0.12)', color: '#d97706',
+          }}>
+            ⏳ Proses
+          </span>
+        );
+      },
     },
     {
       key: 'mdate',

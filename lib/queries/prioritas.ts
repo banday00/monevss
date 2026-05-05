@@ -6,6 +6,8 @@ export interface PriorityItem {
   organisasi_name: string | null;
   dataset_id: string | number | null;
   dataset_name: string | null;
+  dataset_slug: string | null;
+  dataset_validate: string | null; // 'approve' | 'validate' | 'edit' | 'change' | null
   name: string;
   year: number;
   is_active: boolean;
@@ -20,17 +22,21 @@ export async function getPriorityData(year?: number): Promise<PriorityItem[]> {
     `SELECT 
       dp.id, dp.organization_id, o.name as organisasi_name,
       CASE 
-        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false AND d.validate = 'approve'
+        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false
         THEN dp.dataset_id ELSE NULL 
       END as dataset_id,
       CASE 
-        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false AND d.validate = 'approve'
+        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false
         THEN d.name ELSE NULL 
       END as dataset_name,
       CASE 
-        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false AND d.validate = 'approve'
+        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false
         THEN d.slug ELSE NULL 
       END as dataset_slug,
+      CASE 
+        WHEN d.id IS NOT NULL AND d.is_active = true AND d.is_deleted = false
+        THEN d.validate ELSE NULL 
+      END as dataset_validate,
       dp.name, dp.year, dp.is_active, dp.cdate, dp.mdate
     FROM data_priority dp
     LEFT JOIN organisasi o ON dp.organization_id = o.id
