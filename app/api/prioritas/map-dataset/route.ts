@@ -3,6 +3,23 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+/** Coba update priority_level di tabel datasets.
+ *  Jika user tidak punya hak UPDATE ke tabel ini, error diabaikan (log saja). */
+async function tryUpdatePriorityLevel(datasetId: number, level: 'priority' | 'non-priority') {
+  try {
+    await queryReplika(
+      `UPDATE datasets SET priority_level = $1 WHERE id = $2`,
+      [level, datasetId]
+    );
+  } catch (err) {
+    // dashboard_reader mungkin tidak punya hak UPDATE ke tabel datasets — abaikan
+    console.warn(
+      `[map-dataset] Tidak dapat update priority_level datasets id=${datasetId}:`,
+      err instanceof Error ? err.message : err
+    );
+  }
+}
+
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
@@ -19,7 +36,7 @@ export async function PATCH(request: NextRequest) {
     const isMapping = parsedDatasetId != null && !isNaN(parsedDatasetId);
 
     if (isMapping) {
-      // Map: isi dataset_id dan tandai status_priority = true
+      // ── Operasi utama: mapping ──────────────────────────────────────────
       await queryReplika(
         `UPDATE data_priority
          SET dataset_id      = $1,
@@ -29,22 +46,17 @@ export async function PATCH(request: NextRequest) {
         [parsedDatasetId, priority_id]
       );
 
-      // Update priority_level di tabel datasets
-      await queryReplika(
-        `UPDATE datasets
-         SET priority_level = 'priority'
-         WHERE id = $1`,
-        [parsedDatasetId]
-      );
+      // Opsional: update flag priority_level di datasets (bisa gagal jika read-only)
+      await tryUpdatePriorityLevel(parsedDatasetId, 'priority');
+
     } else {
-      // Ambil dataset_id lama sebelum di-unmap
+      // ── Operasi utama: unmap ────────────────────────────────────────────
       const rows = await queryReplika<{ dataset_id: number | null }>(
         `SELECT dataset_id FROM data_priority WHERE id = $1`,
         [priority_id]
       );
       const oldDatasetId = rows[0]?.dataset_id ?? null;
 
-      // Unmap: kosongkan dataset_id dan reset status_priority = false
       await queryReplika(
         `UPDATE data_priority
          SET dataset_id      = NULL,
@@ -65,12 +77,7 @@ export async function PATCH(request: NextRequest) {
           [oldDatasetId]
         );
         if (parseInt(stillMapped[0]?.count ?? '0', 10) === 0) {
-          await queryReplika(
-            `UPDATE datasets
-             SET priority_level = 'non-priority'
-             WHERE id = $1`,
-            [oldDatasetId]
-          );
+          await tryUpdatePriorityLevel(oldDatasetId, 'non-priority');
         }
       }
     }
