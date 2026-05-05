@@ -19,6 +19,32 @@ export async function PATCH(request: NextRequest) {
     const isMapping = parsedDatasetId != null && !isNaN(parsedDatasetId);
 
     if (isMapping) {
+      // ── Pre-check: apakah dataset ini sudah di-mapping ke priority lain? ──
+      const conflicts = await queryReplika<{
+        id: string;
+        name: string;
+        year: number;
+      }>(
+        `SELECT dp.id, dp.name, dp.year
+         FROM data_priority dp
+         WHERE dp.dataset_id = $1
+           AND dp.id != $2
+           AND dp.is_active  = true
+           AND dp.is_deleted = false`,
+        [parsedDatasetId, priority_id]
+      );
+
+      if (conflicts.length > 0) {
+        const conflict = conflicts[0];
+        return NextResponse.json(
+          {
+            error: `Dataset ini sudah di-mapping ke "${conflict.name}" (Tahun ${conflict.year}). Lepas mapping tersebut terlebih dahulu sebelum memetakan ke prioritas ini.`,
+            conflict: { id: conflict.id, name: conflict.name, year: conflict.year },
+          },
+          { status: 409 }
+        );
+      }
+
       // Map: isi dataset_id dan tandai status_priority = true
       await queryReplika(
         `UPDATE data_priority
@@ -28,6 +54,7 @@ export async function PATCH(request: NextRequest) {
          WHERE id = $2`,
         [parsedDatasetId, priority_id]
       );
+
       // Update priority_level di tabel datasets
       await queryReplika(
         `UPDATE datasets
@@ -52,20 +79,35 @@ export async function PATCH(request: NextRequest) {
          WHERE id = $1`,
         [priority_id]
       );
-      // Update priority_level di tabel datasets menjadi non-priority
+
+      // Reset priority_level di datasets hanya jika tidak ada mapping lain
       if (oldDatasetId != null) {
-        await queryReplika(
-          `UPDATE datasets
-           SET priority_level = 'non-priority'
-           WHERE id = $1`,
+        const stillMapped = await queryReplika<{ count: string }>(
+          `SELECT COUNT(*) as count
+           FROM data_priority
+           WHERE dataset_id = $1
+             AND is_active  = true
+             AND is_deleted = false`,
           [oldDatasetId]
         );
+        if (parseInt(stillMapped[0]?.count ?? '0', 10) === 0) {
+          await queryReplika(
+            `UPDATE datasets
+             SET priority_level = 'non-priority'
+             WHERE id = $1`,
+            [oldDatasetId]
+          );
+        }
       }
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Map Dataset API Error:', error);
-    return NextResponse.json({ error: 'Gagal menyimpan mapping dataset' }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Map Dataset API Error:', message);
+    return NextResponse.json(
+      { error: 'Gagal menyimpan mapping dataset', detail: message },
+      { status: 500 }
+    );
   }
 }

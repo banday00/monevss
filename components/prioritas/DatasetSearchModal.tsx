@@ -34,7 +34,8 @@ export default function DatasetSearchModal({ item, onClose, onMapped }: Props) {
   const [results, setResults] = useState<DatasetResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,14 +46,14 @@ export default function DatasetSearchModal({ item, onClose, onMapped }: Props) {
       return;
     }
     setSearching(true);
-    setError(null);
+    setSearchError(null);
     try {
       const res = await fetch(`/api/prioritas/search-dataset?q=${encodeURIComponent(q.trim())}`);
       const json = await res.json();
       if (json.error) throw new Error(json.error);
       setResults(json.results || []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal mencari dataset');
+      setSearchError(e instanceof Error ? e.message : 'Gagal mencari dataset');
     } finally {
       setSearching(false);
     }
@@ -71,7 +72,7 @@ export default function DatasetSearchModal({ item, onClose, onMapped }: Props) {
 
   const handleSelect = async (dataset: DatasetResult | null) => {
     setSaving(true);
-    setError(null);
+    setSaveError(null);
     try {
       const res = await fetch('/api/prioritas/map-dataset', {
         method: 'PATCH',
@@ -86,9 +87,10 @@ export default function DatasetSearchModal({ item, onClose, onMapped }: Props) {
       onMapped(item.id, dataset?.id ?? null, dataset?.name ?? null);
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal menyimpan mapping');
+      setSaveError(e instanceof Error ? e.message : 'Gagal menyimpan mapping');
     } finally {
       setSaving(false);
+      setSelectedId(null);
     }
   };
 
@@ -260,12 +262,33 @@ export default function DatasetSearchModal({ item, onClose, onMapped }: Props) {
               </span>
             )}
           </div>
-          {error && (
+          {searchError && (
             <div style={{ marginTop: 8, fontSize: 12, color: 'var(--status-danger)', fontWeight: 500 }}>
-              ⚠️ {error}
+              ⚠️ {searchError}
             </div>
           )}
         </div>
+
+        {/* Save Error Banner — conflict atau error lainnya */}
+        {saveError && (
+          <div style={{
+            margin: '0 20px 10px',
+            padding: '10px 14px',
+            background: 'rgba(239,68,68,0.08)',
+            border: '1px solid rgba(239,68,68,0.3)',
+            borderRadius: 'var(--radius-md)',
+            fontSize: 12,
+            color: '#dc2626',
+            fontWeight: 500,
+            lineHeight: 1.5,
+            display: 'flex',
+            gap: 8,
+            alignItems: 'flex-start',
+          }}>
+            <span style={{ fontSize: 15, flexShrink: 0 }}>⚠️</span>
+            <span>{saveError}</span>
+          </div>
+        )}
 
         {/* Results */}
         <div style={{
